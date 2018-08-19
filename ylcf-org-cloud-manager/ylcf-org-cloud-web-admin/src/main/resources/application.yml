@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: consumer-admin
+server:
+  port: 8088
+
+  #为服务Id名称为provider-demo的项目配置负载均衡规则为com.netflix.loadbalancer.WeightedResponseTimeRule
+  #provider-demo:
+    #ribbon:
+        #NFLoadBalancerRuleClassName: com.netflix.loadbalancer.WeightedResponseTimeRule
+
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://root:root@localhost:8761/eureka
+
+
+#  hystrix
+hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds: 1000 #1000毫秒
+feign.hystrix.enabled: true
