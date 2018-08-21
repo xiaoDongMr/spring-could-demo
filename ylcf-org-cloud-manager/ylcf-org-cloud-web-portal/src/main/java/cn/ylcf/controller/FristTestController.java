@@ -14,10 +14,11 @@ public class FristTestController {
     @Autowired
     private FirstTestServer firstTestServer;
 
-    @GetMapping(value = "doTest")
+    @GetMapping(value = "/doTest/{code}")
     public String doTest(@PathVariable Integer code){
 
-        return firstTestServer.doTestServer(code);
+        String aas = "ad";
+        return firstTestServer.doTestServer();
 
     }
 }

@@ -7,12 +7,7 @@ server.port: 8080
 spring:
   application:
     name: org-portal
-  profiles:
-    active: dev
-  cloud:
-    config:
-      label: master
-      uri: http://localhost:8888
+
 
 eurekaServer:
   host: localhost
