@@ -1,7 +1,7 @@
 package cn.yilucaifu.domain;
 
-import com.yilucaifu.utils.DateUtils;
-import com.yilucaifu.utils.StringUtil;
+import cn.yilucaifu.utils.DateUtils;
+import cn.yilucaifu.utils.StringUtil;
 
 import java.math.BigDecimal;
 

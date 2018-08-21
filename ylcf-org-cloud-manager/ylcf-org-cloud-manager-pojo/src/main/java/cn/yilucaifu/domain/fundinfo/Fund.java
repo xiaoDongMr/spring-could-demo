@@ -3,7 +3,7 @@
  */
 package cn.yilucaifu.domain.fundinfo;
 
-import com.yilucaifu.utils.YLCFConstants;
+import cn.yilucaifu.utils.YLCFConstants;
 
 import java.io.Serializable;
 import java.util.List;

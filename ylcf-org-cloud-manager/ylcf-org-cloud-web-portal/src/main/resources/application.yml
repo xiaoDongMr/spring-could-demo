@@ -1,18 +1,9 @@
-#dev开发环境配置文件
-#test测试环境
-#pro正式环境
-
-server.port: 8080
+server:
+  port: 8001
 
 spring:
   application:
-    name: org-portal
-  profiles:
-    active: dev
-  cloud:
-    config:
-      label: master
-      uri: http://localhost:8888
+    name: org-portal-web
 
 eurekaServer:
   host: localhost
@@ -22,7 +13,6 @@ eurekaServer:
 
 eureka:
   client:
-    #将此项目注册到Eureka服务
     register-with-eureka: true
     service-url:
       defaultZone: http://${eurekaServer.user}:${eurekaServer.password}@${eurekaServer.host}:${eurekaServer.port}/eureka

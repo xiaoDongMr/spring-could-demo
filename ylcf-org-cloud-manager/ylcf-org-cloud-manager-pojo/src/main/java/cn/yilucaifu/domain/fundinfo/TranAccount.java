@@ -1,7 +1,7 @@
 package cn.yilucaifu.domain.fundinfo;
 
 import cn.yilucaifu.utils.hs.HsConstants;
-import org.apache.commons.lang.xwork.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.Serializable;
 import java.util.Date;
