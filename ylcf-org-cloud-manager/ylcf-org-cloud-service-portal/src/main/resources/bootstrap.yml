@@ -1,8 +1,8 @@
-server.port: 8999
+server.port: 8080
 
 spring:
   application:
-    name: config-client
+    name: org-portal
   profiles:
     active: dev
   cloud:
@@ -14,3 +14,8 @@ eureka:
     register-with-eureka: true
     service-url:
       defaultZone: http://root:root@localhost:8761/eureka
+
+
+      #dev开发环境配置文件
+      #test测试环境
+      #pro正式环境
