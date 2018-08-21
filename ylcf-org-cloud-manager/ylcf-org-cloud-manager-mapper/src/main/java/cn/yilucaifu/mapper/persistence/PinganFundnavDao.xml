@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence.PinganFundnavDao">
+	<select id="getNavCal" parameterType="String" resultType="cn.yilucaifu.domain.fundinfo.PinganFundnav">
+		select fundcode,tradedate,nav
+		from yilucaifu.pingan_fundnav_new
+		where fundcode = #{fundcode}
+		and distributorcode = #{distributorcode}
+		and (nav is not null and nav != '')
+		and (tradedate is not null and tradedate != '')
+		order by tradedate desc
+		limit #{limit}
+	</select>
+</mapper>

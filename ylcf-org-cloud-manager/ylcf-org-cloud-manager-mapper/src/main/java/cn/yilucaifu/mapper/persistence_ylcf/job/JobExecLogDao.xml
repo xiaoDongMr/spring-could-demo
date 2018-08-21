@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.yilucaifu.mapper.persistence_ylcf.job.JobExecLogDao">
+    <!--auto generated Code-->
+    <resultMap id="AllColumnMap" type="cn.yilucaifu.domain.job.JobExecLog">
+        <result column="id" property="id"/>
+        <result column="exec_method" property="exec_method"/>
+        <result column="exec_time" property="exec_time"/>
+        <result column="isauto" property="isauto"/>
+        <result column="job_msg" property="job_msg"/>
+        <result column="job_info" property="job_info"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <!--auto generated Code-->
+    <sql id="all_column">
+        `id`,
+        `exec_method`,
+        `exec_time`,
+        `isauto`,
+        `job_msg`,
+        `job_info`,
+        `remark`
+    </sql>
+
+    <!--auto generated Code-->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="pojo.id" parameterType="cn.yilucaifu.domain.job.JobExecLog">
+        INSERT INTO job_exec_log (
+            `id`,
+            `exec_method`,
+            `exec_time`,
+            `exec_end_time`,
+            `isauto`,
+            `issuccess`,
+            `job_msg`,
+            `job_info`,
+            `remark`
+        ) VALUES (
+            #{pojo.id},
+            #{pojo.exec_method},
+            #{pojo.exec_time},
+            #{pojo.exec_end_time},
+            #{pojo.isauto},
+            #{pojo.issuccess},
+            #{pojo.job_msg},
+            #{pojo.job_info},
+            #{pojo.remark}
+        )
+    </insert>
+
+    <update id="updateExceptionMsg">
+        UPDATE job_exec_log
+        <set>
+            <if test="pojo.id != null"> `id` = #{pojo.id}, </if>
+            <if test="pojo.exec_method != null"> `exec_method` = #{pojo.exec_method}, </if>
+            <if test="pojo.exec_time != null"> `exec_time` = #{pojo.exec_time}, </if>
+            <if test="pojo.isauto != null"> `isauto` = #{pojo.isauto}, </if>
+            <if test="pojo.job_msg != null"> `job_msg` = #{pojo.job_msg}, </if>
+            <if test="pojo.job_info != null"> `job_info` = #{pojo.job_info}, </if>
+            <if test="pojo.remark != null"> `remark` = #{pojo.remark} </if>
+        </set>
+        WHERE exec_method = #{pojo.exec_method}
+    </update>
+
+    <select id="selectByDate" resultType="cn.yilucaifu.domain.job.JobExecInfo">
+        SELECT j.remark NAME,j.exec_method,j.plan_exec_time FROM job_exec_log l INNER JOIN job_info j ON l.exec_method=j.exec_method WHERE LEFT(l.exec_time, 10)=#{date} AND l.exec_method IN (SELECT i.exec_method FROM job_info i WHERE i.iscontrol=1 AND i.type=1 AND i.timelen=1)
+    </select>
+    <select id="selectTimes" resultType="java.lang.Integer">
+        SELECT SUM(times) FROM job_info WHERE iscontrol=1 AND times=#{times}
+    </select>
+    <select id="selectLogByDateMethod" resultType="cn.yilucaifu.domain.job.JobExecLog">
+        SELECT l.* FROM job_exec_log l WHERE LEFT(l.exec_time,10)=#{date} AND issuccess=1 AND l.exec_method=#{exec_method}
+    </select>
+
+    <update id="updateInfoByMethod">
+        UPDATE job_info SET modifytime=#{modifytime} where exec_method=#{exec_method}
+    </update>
+    <select id="selectNotExecOne" resultType="cn.yilucaifu.domain.job.JobInfo">
+        SELECT * FROM job_info WHERE iscontrol=1 AND times=1 AND LEFT(IFNULL(modifytime,'0000-00-00'), 10)!=#{date}
+    </select>
+    <select id="selectInfoByMethod" resultType="cn.yilucaifu.domain.job.JobInfo">
+        SELECT * FROM job_info WHERE iscontrol=1 AND exec_method=#{exec_method}
+    </select>
+
+    <select id="selectJobOne" resultType="cn.yilucaifu.domain.job.JobInfo">
+        SELECT * FROM job_info WHERE iscontrol=1 AND times=1 AND ((def2 &gt;= '18:00' AND def2 &lt;= '24:00' AND LEFT(IFNULL(modifytime,'0000-00-00'),10)!=#{predate}) OR (def2 &gt;= '00:00' AND def2 &lt;= '07:00' AND LEFT(IFNULL(modifytime,'0000-00-00'),10)!=#{date}))
+    </select>
+    <select id="selectJobTwo" resultType="cn.yilucaifu.domain.job.JobInfo">
+        SELECT * FROM job_info WHERE iscontrol=1 AND times=1 AND (def2 &gt;= '07:00' AND def2 &lt;= '13:00' AND LEFT(IFNULL(modifytime,'0000-00-00'),10)!=#{date})
+    </select>
+    <select id="selectJobThree" resultType="cn.yilucaifu.domain.job.JobInfo">
+        SELECT * FROM job_info WHERE iscontrol=1 AND times=1 AND (def2 &gt;= '13:00' AND def2 &lt;= '18:00' AND LEFT(IFNULL(modifytime,'0000-00-00'),10)!=#{date})
+    </select>
+</mapper>
+

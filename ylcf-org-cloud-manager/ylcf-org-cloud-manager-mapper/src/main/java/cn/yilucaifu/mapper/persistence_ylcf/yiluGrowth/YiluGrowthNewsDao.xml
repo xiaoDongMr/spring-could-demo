@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence_ylcf.yiluGrowth.YiluGrowthNewsDao">
+	
+	<select id="selectYiluGrowthNewsList" resultType="cn.yilucaifu.domain.yiluGrowth.YiluGrowthNews">
+		select id,position,mediaName,articleName,contentSummary,url,operateTime,isEnable from yilu_growth_news
+	</select>
+	
+	<select id="selectYiluGrowthNewsById" parameterType="java.lang.Integer" resultType="cn.yilucaifu.domain.yiluGrowth.YiluGrowthNews">
+		select id,position,mediaName,articleName,contentSummary,url,operateTime,isEnable from yilu_growth_news where id = #{id}
+	</select>
+	
+	<select id="saveYiluGrowthNews" parameterType="cn.yilucaifu.domain.yiluGrowth.YiluGrowthNews">
+		insert into yilu_growth_news(position,mediaName,articleName,contentSummary,url,operateTime,isEnable) 
+		values(#{position},#{mediaName},#{articleName},#{contentSummary},#{url},now(),#{isEnable})
+	</select>
+	
+	<update id="updateYiluGrowthNews" parameterType="cn.yilucaifu.domain.yiluGrowth.YiluGrowthNews">
+		update yilu_growth_news set position=#{position},mediaName=#{mediaName},articleName=#{articleName},
+		contentSummary=#{contentSummary},url=#{url},operateTime=now(),isEnable=#{isEnable} where id = #{id}
+	</update>
+	
+	<select id="selectEnableYiluGrowthNewsList" resultType="cn.yilucaifu.domain.yiluGrowth.YiluGrowthNews">
+		select id,position,mediaName,articleName,contentSummary,url,operateTime,isEnable from yilu_growth_news where isEnable = 1 order by position asc
+	</select>
+	
+</mapper>

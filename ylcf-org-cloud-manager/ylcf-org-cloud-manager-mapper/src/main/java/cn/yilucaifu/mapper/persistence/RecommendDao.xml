@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.yilucaifu.mapper.persistence.RecommendDao">
+
+	<!-- 推荐基金 -->
+	<resultMap id="recommendFund" type="cn.yilucaifu.domain.fundinfo.RecommendFund">
+	</resultMap>
+
+	<select id="findNewFundListByFundcode" resultMap="recommendFund" parameterType="string">
+		select a.*
+		from yilucaifu.recommend
+		a left join juling.FND_GEN_INFO b on a.innercode = b.inner_code
+		where a.fundcode = #{fundcode}
+		AND a.fundtype = '0'
+		and b.FUND_STATUS = 4 and b.STATUS = 1
+	</select>
+
+	<select id="findChosenFundByFundcode"  resultType="cn.yilucaifu.domain.fundinfo.RecommendFundMap">
+		select
+		r.lable,r.adcopy,
+		info.seq ,
+		info.fund_code ,
+		info.fund_code fundcode,
+		info.fundsname fundname,
+		info.fund_status,
+		info.STATUS AS status,
+		info.fund_type
+		from juling.FND_GEN_INFO info
+		left join yilucaifu.recommend r on info.INNER_CODE = r.INNERCODE
+		where
+		info.fund_code = #{fundcode} AND
+		r.fundtype = 12 and info.ISVALID=1 and info.STATUS=1 and r.isDisplay=1
+
+	</select>
+
+	<select id="selectMammonRecommandByFundcode" resultType="cn.yilucaifu.domain.fundinfo.RecommendFund">
+		SELECT *
+		FROM yilucaifu.recommend where fundcode = #{fundcode} AND isDisplay = '1' limit 1;
+	</select>
+
+	<select id="getChosenFundList"  resultType="java.util.Map">
+		select
+		info.fund_code fundcode,
+		info.fundsname fundname,
+		info.fund_type,
+		truncate(if(calc.unit_net_chng_pct_1_year is
+		null and oyr_yld is null ,
+		null,ifnull(calc.unit_net_chng_pct_1_year,0)+ifnull(oyr_yld,0)),2)
+		unit_net_chng_pct_1_year
+		from juling.FND_GEN_INFO info
+		left join juling.ylcf_ana_fnd_nav_calc calc on info.INNER_CODE	=calc.INNER_CODE
+		left join juling.YLCF_ANA_FND_MNY_RETRUN mny on info.INNER_CODE =mny.INNER_CODE
+		left join yilucaifu.recommend r on info.INNER_CODE = r.INNERCODE
+		where r.fundtype = 12 and info.ISVALID=1 and info.STATUS=1 and r.isDisplay=1
+		group by info.fund_id
+		order by r.position
+		limit #{length}
+	</select>
+
+	<!--获取推荐基金列表-->
+	<select id="findRecommendFundList" resultType="java.util.Map">
+		SELECT
+		*
+		FROM
+		yilucaifu_org.`fund_recommend` r
+		WHERE
+		r.`recommendType` = #{recommendType}
+		AND
+		r.status = 1
+		limit 1;
+	</select>
+
+	<!--获取推荐基金列表-->
+	<update id="updateRecommendFundInfo">
+		UPDATE
+		yilucaifu_org.`fund_recommend` r
+		SET
+		r.recommendCode = #{recommendCode},
+		r.updateTime = NOW()
+		WHERE
+		r.recommendType = #{recommendType};
+	</update>
+
+	<insert id="saveRecommendFundInfo" parameterType="java.util.Map">
+		INSERT	INTO
+		yilucaifu_org.`fund_recommend`(recommendType,recommendCode,status,updateTime,createtime)
+		SELECT #{recommendType},#{recommendCode},#{status},now(),now() FROM DUAL
+		WHERE NOT EXISTS(
+		SELECT *
+		FROM
+		yilucaifu_org.`fund_recommend`
+		WHERE
+		recommendType = #{recommendType}
+		AND
+		status = 1
+		)
+	</insert>
+</mapper>

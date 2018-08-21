@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.yilucaifu.mapper.persistence.monitor.MonitorDao">
+
+	<select id="getMonitorIptableByParam" parameterType="java.util.Map" resultType="Integer">
+		select count(*)
+		from monitor_iptable 
+		<where>
+			<if test="ip != null and ip != null">
+				ip = #{ip}
+			</if>
+			<if test="createtime != null and createtime != null">
+				ip = #{ip}
+			</if>
+			<if test="flag != null">
+				and flag = #{flag}
+			</if>
+		</where>
+	</select>
+</mapper>
+ 

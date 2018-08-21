@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence_ylcf.FundHoldMiddleDao">
+
+	<update id="updateIsRedeem" parameterType="cn.yilucaifu.domain.fundinfo.FundHoldMiddle">
+		UPDATE
+		yilucaifu.fund_hold_middle
+		SET isRedeem = 1
+		WHERE transactionaccountid = #{transactionaccountid}
+		AND fundcode = #{fundcode}
+	</update>
+
+</mapper>

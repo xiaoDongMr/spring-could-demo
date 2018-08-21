@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.ylcf</groupId>
+    <artifactId>ylcf-parent</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+
+        <springCloud.version>Finchley.RELEASE</springCloud.version>
+        <springBoot.version>2.0.3.RELEASE</springBoot.version>
+        <springBootMyBatis.version>1.3.0</springBootMyBatis.version>
+        <springBootpagehelper.version>1.2.3</springBootpagehelper.version>
+        <springBootAdmin.version>2.0.2</springBootAdmin.version>
+        <springBootDruid.version>1.1.10</springBootDruid.version>
+        <springBootRedis.version>1.4.3.RELEASE</springBootRedis.version>
+        <junit.version>4.12</junit.version>
+        <mysql.version>5.1.32</mysql.version>
+        <!--<jackson.version>4.3.5</jackson.version>
+        <httpclient.version>4.3.5</httpclient.version>-->
+        <servletapi.version>3.1.0</servletapi.version>
+        <commonslang.version>2.6</commonslang.version>
+        <commonslang3.version>3.3.2</commonslang3.version>
+        <!--<commonsio.version>4.3.5</commonsio.version>
+        <commonsnet.version>4.3.5</commonsnet.version>
+        <jsqlparser.version>4.3.5</jsqlparser.version>-->
+        <slf4j.version>1.7.2</slf4j.version>
+        <commonsfileupload.version>1.3.3</commonsfileupload.version>
+        <jedis.version>2.7.2</jedis.version>
+        <!--<solrj.version>4.3.5</solrj.version>-->
+        <!--<freemarker.version>4.3.5</freemarker.version>
+        <quartz.version>4.3.5</quartz.version>-->
+        <fastjson.version>1.2.28</fastjson.version>
+        <swagger2.version>2.8.0</swagger2.version>
+        <lombok.version>1.16.16</lombok.version>
+        <beetl.version>0.0.3</beetl.version>
+        <hutool.version>4.3.5</hutool.version>
+        <logbackkafka.version>0.1.0</logbackkafka.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+    </properties>
+
+    <!--springBoot-->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.0.3.RELEASE</version>
+    </parent>
+    <!--springCloud-->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${springCloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+
+    <dependencies>
+        <!-- 单元测试 -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+        </dependency>
+
+        <!-- 日志处理 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+    </dependencies>
+
+
+    <modules>
+        <module>ylcf-cloud-eureka</module>
+        <module>ylcf-cloud-zuul</module>
+        <module>ylcf-cloud-turbine</module>
+        <module>ylcf-cloud-sleuth</module>
+        <module>ylcf-cloud-admin</module>
+        <module>ylcf-cloud-common</module>
+        <module>ylcf-org-cloud-manager</module>
+        <module>ylcf-cloud-config</module>
+    </modules>
+
+    <!--<build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>-->
+
+</project>

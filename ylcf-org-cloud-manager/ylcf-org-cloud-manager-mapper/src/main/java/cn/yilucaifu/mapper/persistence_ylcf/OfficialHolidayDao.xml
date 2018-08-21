@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence_ylcf.OfficialHolidayDao">
+	<select id="findOfficialHolidayByDate" resultType="cn.yilucaifu.domain.fundinfo.OfficialHoliday"
+		parameterType="String">
+		SELECT id,holiday FROM pingan_official_holiday WHERE
+		holiday =#{holiday} LIMIT 1;
+	</select>
+</mapper>

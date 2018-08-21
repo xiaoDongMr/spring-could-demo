@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence.PinganFundlimitDao">
+	<sql id="accountColumn">
+		a.id,
+		a.distributorcode,
+		a.fundcode,
+		a.maxredemptionvol,
+		a.minaccountbalance,
+		a.minredemptionvol,
+		a.minspbidsamount,
+		a.mininterconvertvol,
+		a.minbonuscash,
+		a.instappsubsamnt,
+		a.instappsubsvol,
+		a.indiappsubsvol,
+		a.indiappsubsamount,
+		a.minamountbyinst,
+		a.minvolbyinst,
+		a.minsubsvolbyindi,
+		a.minsubsamountbyindi,
+		a.minbidsamountbyindi,
+		a.minbidsamountbyinst,
+		a.minappbidsamountbyindi,
+		a.minappbidsamountbyinst,
+		a.maxsubsvolbyindi,
+		a.maxsubsamountbyindi,
+		a.maxsubsvolbyinst,
+		a.maxsubsamountbyinst,
+		a.subunitvol,
+		a.createtime,
+		a.filetime,
+		a.businessname
+	</sql>
+
+	<select id="findFundlimitByFundcode" parameterType="String"
+		resultType="cn.yilucaifu.domain.fundinfo.PinganFundlimit">
+		select
+		<include refid="accountColumn" />
+		from yilucaifu.pingan_fundlimit a where a.fundcode =
+		#{fundcode} order by a.createtime desc limit 1;
+	</select>
+
+	<select id="findFundlimitByFundcodeBuss" parameterType="String"
+			resultType="cn.yilucaifu.domain.fundinfo.PinganFundlimit">
+		select
+		<include refid="accountColumn" />
+		from yilucaifu.pingan_fundlimit a where a.fundcode =
+		#{fundcode} and businessname=#{businessname} order by a.createtime desc limit 1;
+	</select>
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence.YiluBaoDao">
+
+	<select id="selectYiluBaoList" resultType="cn.yilucaifu.domain.fundinfo.YiluBao">
+		select * from yilucaifu.yilu_bao
+	</select>
+	
+	<select id="selectYiluBaoById" parameterType="java.lang.Integer" resultType="cn.yilucaifu.domain.fundinfo.YiluBao">
+		select * from yilucaifu.yilu_bao where id = #{id}
+	</select>
+	
+	<insert id="addYiluBao" parameterType="cn.yilucaifu.domain.fundinfo.YiluBao">
+		insert into yilucaifu.yilu_bao(fundCode,fundName,yiluBaoAlias,isAppointment,position,isBuy,isQuickRedeem,isAutoInvest,remark,lastUpdateTime)
+		values(#{fundCode},#{fundName},#{yiluBaoAlias},#{isAppointment},#{position},#{isBuy},#{isQuickRedeem},#{isAutoInvest},#{remark},now())
+	</insert>
+	
+	<update id="updateYiluBao" parameterType="cn.yilucaifu.domain.fundinfo.YiluBao">
+		update yilucaifu.yilu_bao
+		set fundCode = #{fundCode},fundName=#{fundName},
+		<if test="yiluBaoAlias != null">
+			yiluBaoAlias=#{yiluBaoAlias},
+		</if>
+		isAppointment=#{isAppointment},position=#{position},
+		isBuy=#{isBuy},
+		isQuickRedeem=#{isQuickRedeem},
+		isAutoInvest=#{isAutoInvest},
+		remark=#{remark},
+		lastUpdateTime=now()
+		where id=#{id}
+	</update>
+	
+	<delete id="deleteYiluBaoById" parameterType="java.lang.Integer">
+		delete from yilucaifu.yilu_bao where id = #{id}
+	</delete>
+	
+	<select id="selectFundNameByFundCode" parameterType="java.lang.String" resultType="java.lang.String">
+		select FUNDSNAME from juling.FND_GEN_INFO where FUND_CODE = #{fundCode} 
+	</select>
+	
+	<select id="findYiluBaoByFundCode" resultType="cn.yilucaifu.domain.fundinfo.YiluBao">
+		select * from yilucaifu.yilu_bao where fundcode = #{fundcode} limit 1;
+	</select>
+	
+	<select id="findSupportAppointmentFund" resultType="java.lang.String">
+		select Group_concat(fundCode) from yilucaifu.yilu_bao where isAppointment = 1
+	</select>
+	
+	<select id="findYilubaoList" resultType="cn.yilucaifu.domain.fundinfo.YiluBao">
+		select * from yilucaifu.yilu_bao
+	</select>
+</mapper>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.yilucaifu.mapper.persistence.PinganBankInfoDao">
+	<select id="findBankInfoList" resultType="cn.yilucaifu.domain.fundinfo.PinganBankInfo">
+		select * from
+		pingan_bank order by yilucaifu.recommend_position;
+	</select>
+	<select id="findBankInfoByBankno" resultType="cn.yilucaifu.domain.fundinfo.PinganBankInfo">
+		select * from
+		<if test="bankno=='9999'">
+			yilucaifu.pingan_bank where bankno = '302' limit 1;
+		</if>
+		<if test="bankno!='9999'">
+			yilucaifu.pingan_bank where bankno = #{bankno} limit 1;
+		</if>
+	</select>
+	<select id="findBankInfoByBankname" resultType="cn.yilucaifu.domain.fundinfo.PinganBankInfo">
+		select * from
+		yilucaifu.pingan_bank where bankname = #{bankname} limit 1;
+	</select>
+	<select id="findBankInfoByBanknameReg" resultType="cn.yilucaifu.domain.fundinfo.PinganBankInfo">
+		select * from
+		yilucaifu.pingan_bank where bankname like CONCAT('%','${bankname}','%') limit 1;
+	</select>
+	<select id="findBankInfoListByPaytype" resultType="cn.yilucaifu.domain.fundinfo.PinganBankInfo">
+		select * from
+		yilucaifu.pingan_bank where 1=1
+		<if test="paytype != null and paytype =1">
+			and (paytype =1 or paytype =2 )
+		</if>
+		<if test="paytype != null and paytype =0">
+			and (paytype =0 or paytype =2 )
+		</if>
+		order by recommend_position;
+	</select>
+	
+		<update id="updatePinganBankById" parameterType="cn.yilucaifu.domain.fundinfo.PinganBankInfo">
+		update yilucaifu.pingan_bank
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="bankname !=null">
+				bankname = #{bankname},
+			</if>
+			<if test="bankno !=null">
+				bankno = #{bankno},
+			</if>
+			<if test="ebankcode !=null">
+				ebankcode = #{ebankcode},
+			</if>
+			<if test="paytype !=null">
+				paytype = #{paytype},
+			</if>
+			<if test="recommend_position !=null">
+				recommend_position = #{recommend_position},
+			</if>
+			<if test="limitdesc !=null">
+				limitdesc = #{limitdesc},
+			</if>
+			<if test="unionPaylimit !=null">
+				unionPaylimit = #{unionPaylimit},
+			</if>
+			<if test="unionPaylimitSingle !=null">
+				unionPaylimitSingle = #{unionPaylimitSingle},
+			</if>
+		</trim>
+		where id=#{id}
+	</update>
+</mapper>
+ 

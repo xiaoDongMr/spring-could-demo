@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence.RecommandProductDao">
+	<select id="selectRecommandByFundcode" resultType="cn.yilucaifu.domain.fundinfo.RecommandProduct">
+		select
+		*
+		from yilucaifu.recommand_modular_detail where fundcode=#{fundcode} order by createtime desc limit 1;
+	</select>
+
+</mapper>

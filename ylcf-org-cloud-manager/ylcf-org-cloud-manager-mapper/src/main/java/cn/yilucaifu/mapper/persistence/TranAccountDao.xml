@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence.TranAccountDao">
+	<sql id="accountColumn">
+		a.account_id,
+		a.user_id,
+		a.identity,
+		a.investorname,
+		a.depositacct,
+		a.bankbook,
+		a.mobiletelno,
+		a.postcode,
+		a.address,
+		a.sex,
+		a.bankno,
+		a.netlineno,
+		<!-- a.taaccountid, -->
+		a.risklevel,
+		a.ci,
+		a.ui,
+		a.xjbao_ui,
+		a.isactive,
+		a.createtime,
+		a.isVailcard,
+		a.isSign,
+		a.valiCardDate,
+		a.amount,
+		a.bankname,
+		a.valiCount,
+		a.signtime,
+		a.citycode,
+		a.provincecode,
+		a.valiType,
+		a.lastRiskTime,
+		a.showvailtype,
+		a.isUnion,
+		a.allot_no,
+		a.client_id,
+		a.apply_date,
+		a.investor_type,
+		a.is_convertible,
+		a.email,
+		a.profession,
+		a.tax_resident_identity_type,
+		a.xuanji_ui
+	</sql>
+	<!-- 根据用户id获得基金账户 -->
+	<select id="getAccountByUserId" parameterType="int" resultType="cn.yilucaifu.domain.fundinfo.TranAccount">
+		select
+		<include refid="accountColumn" />
+		from pingan_tranaccount a where a.user_id=#{userid} limit 1;
+	</select>
+
+	<!-- 新增基金用户 -->
+	<insert id="createAccount" parameterType="cn.yilucaifu.domain.fundinfo.TranAccount"
+			keyProperty="account_id" useGeneratedKeys="true">
+	insert into
+	pingan_tranaccount
+	( user_id, investorname, depositacct,
+	bankbook,mobiletelno,postcode,address,sex,bankno,netlineno,identity,ui,ci,risklevel,isactive,isVailcard,createtime,isSign,valiCardDate,amount,bankname,signtime,valiCount,citycode,provincecode,valiType,showvailtype,isUnion,allot_no,client_id,apply_date,email,profession,tax_resident_identity_type
+	)
+	values
+	(
+	#{user_id}, #{investorname}
+	,#{depositacct},
+	#{bankbook},
+	#{mobiletelno},
+	#{postcode},
+	#{address},
+	#{sex},
+	#{bankno},
+	#{netlineno},
+	#{identity},
+	#{ui},
+	#{ci},
+	#{risklevel},
+	#{isactive},
+	#{isVailcard},
+	#{createtime},
+	#{isSign},
+	#{valiCardDate},
+	#{amount},
+	#{bankname},
+	#{signtime},
+	#{valiCount},
+	#{citycode},
+	#{provincecode},
+	#{valiType},
+	#{showvailtype},
+	#{isUnion},
+	#{allot_no},
+	#{client_id},
+	#{apply_date},
+	#{email},
+	#{profession},
+	#{tax_resident_identity_type}
+	)
+	</insert>
+
+	<select id="getAccountByUi" parameterType="String"
+			resultType="cn.yilucaifu.domain.fundinfo.TranAccount">
+		select
+		<include refid="accountColumn" />
+		from pingan_tranaccount a where ui =#{ui} limit 1;
+	</select>
+
+	<!-- 修改基金用户 -->
+	<update id="updateAccount" parameterType="cn.yilucaifu.domain.fundinfo.TranAccount">
+		UPDATE
+		pingan_tranaccount a
+		SET
+		a.user_id= #{user_id} ,
+		a.address=
+		#{address} ,
+		a.ci= #{ci} ,
+		a.identity= #{identity} ,
+		a.postcode=
+		#{postcode} ,
+		a.investorname=#{investorname},
+		a.depositacct=#{depositacct},
+		a.bankbook= #{bankbook},
+		a.investorname=
+		#{investorname},
+		a.bankno= #{bankno},
+		a.netlineno= #{netlineno},
+		a.risklevel= #{risklevel},
+		<!-- a.taaccountid= #{taaccountid}, -->
+		a.ui=#{ui},
+		a.xjbao_ui=#{xjbao_ui},
+		a.amount=#{amount},
+		a.mobiletelno=#{mobiletelno},
+		a.isactive=#{isactive},
+		a.createtime=
+		#{createtime},
+		a.isSign= #{isSign},
+		a.valiCardDate= #{valiCardDate},
+		a.isVailcard=#{isVailcard},
+		a.bankname=#{bankname},
+		a.signtime=#{signtime},
+		a.valiCount=#{valiCount},
+		a.citycode=#{citycode},
+		a.provincecode=#{provincecode},
+		a.valiType=#{valiType},
+		a.lastRiskTime=#{lastRiskTime},
+		a.isUnion=#{isUnion},
+		a.investor_type=#{investor_type},
+		a.is_convertible=#{is_convertible},
+		a.email=#{email},
+		a.profession=#{profession},
+		a.tax_resident_identity_type=#{tax_resident_identity_type}
+		where
+		a.account_id
+		=#{account_id}
+	</update>
+
+	<update id="updateXuanjiUi" parameterType="cn.yilucaifu.domain.fundinfo.TranAccount">
+		UPDATE
+		pingan_tranaccount
+		SET xuanji_ui = #{xuanji_ui}
+		WHERE account_id = #{account_id}
+	</update>
+</mapper>

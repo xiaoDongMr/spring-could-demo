@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence.UserTradeExceptionDao">
+
+	<insert id="saveUserTradeException" parameterType="cn.yilucaifu.domain.UserTradeException">
+		insert into yilucaifu.user_trade_exception(user_id,product_id,tradeStatus,orderTime,appsheetserialno,payTime,amount,product_classify,comId,comment,isAutoInvest,createtime)
+		values(#{user_id},#{product_id},#{tradeStatus},#{orderTime},#{appsheetserialno},#{payTime},#{amount},#{product_classify},#{comId},#{comment},#{isAutoInvest},now())
+	</insert>
+
+	
+</mapper>

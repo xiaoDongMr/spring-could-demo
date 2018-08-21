@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.yilucaifu.mapper.persistence_ylcf.PinganThirdBulFundDao">
+
+	<select id="getLastedThirdBulFundByFundcode" resultType="cn.yilucaifu.domain.fundinfo.PinganThirdBulFund">
+		SELECT
+		  *
+		FROM
+		  pingan_third_bal_fund
+		WHERE TRANSACTIONACCOUNTID = #{transactionaccountid}
+		AND FUNDCODE = #{fundcode}
+		ORDER BY FILETIME DESC limit 1
+	</select>
+
+</mapper>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence_ylcf.PinganTainfoDao">
+	<sql id="accountColumn">
+		a.id,
+		a.distributorcode,
+		a.tano,
+		a.taname,
+		a.tel,
+		a.txrxmd,
+		a.tast,
+		a.tatp,
+		a.recvdirectory,
+		a.senddirectory,
+		a.importflag,
+		a.ta_ver,
+		a.registeraddress,
+		a.officeaddress,
+		a.linkman,
+		a.principal,
+		a.createtime,
+		a.filetime
+	</sql>
+	<insert id="savaTainfo"
+		parameterType="cn.yilucaifu.domain.fundinfo.PinganTainfo"
+		keyProperty="id" useGeneratedKeys="true">
+		insert into pingan_tainfo
+		(
+		distributorcode,
+		tano,
+		taname,
+		tel,
+		txrxmd,
+		tast,
+		tatp,
+		recvdirectory,
+		senddirectory,
+		importflag,
+		ta_ver,
+		registeraddress,
+		officeaddress,
+		linkman,
+		principal,
+		createtime,
+		filetime
+		)
+		values
+		(
+		#{distributorcode},
+		#{tano},
+		#{taname},
+		#{tel},
+		#{txrxmd},
+		#{tast},
+		#{tatp},
+		#{recvdirectory},
+		#{senddirectory},
+		#{importflag},
+		#{ta_ver},
+		#{registeraddress},
+		#{officeaddress},
+		#{linkman},
+		#{principal},
+		#{createtime},
+		#{filetime}
+		)
+	</insert>
+	<select id="findTainfoCountByFiletime" parameterType="String"
+		resultType="int">
+		select count(id) from pingan_tainfo where filetime =
+		#{filetime}
+	</select>
+	
+	
+	<select id="queryRefreshPinganFile" resultType="int">
+		select refresh_pingan_file from system_parm where id = 0
+	</select>
+	
+	<update id="updateRefreshPinganFile">
+		update  system_parm set refresh_pingan_file = 0 where id = 0
+	</update>
+
+	<select id="queryFundFiletime" resultType="String">
+		select fund_file_time from system_parm where id = 1
+	</select>
+
+	<update id="updateFundFiletime" parameterType="String">
+		update  system_parm set fund_file_time = #{fund_file_time} where id = 1
+	</update>
+</mapper>

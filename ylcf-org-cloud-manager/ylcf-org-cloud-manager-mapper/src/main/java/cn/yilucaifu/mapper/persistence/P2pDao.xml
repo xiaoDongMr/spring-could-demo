@@ -1,0 +1,1000 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence.P2pDao">
+  <resultMap id="BaseResultMap" type="cn.yilucaifu.domain.P2p">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="man_id" jdbcType="INTEGER" property="manId" />
+    <result column="p2pNo" jdbcType="VARCHAR" property="p2pno" />
+    <result column="p2pName" jdbcType="VARCHAR" property="p2pname" />
+    <result column="p2pType" jdbcType="VARCHAR" property="p2ptype" />
+    <result column="bankno" jdbcType="VARCHAR" property="bankno" />
+    <result column="bankcard" jdbcType="VARCHAR" property="bankcard" />
+    <result column="raise_house" jdbcType="VARCHAR" property="raiseHouse" />
+    <result column="bank_sub_name" jdbcType="VARCHAR" property="bankSubName" />
+    <result column="isLine" jdbcType="INTEGER" property="isline" />
+    <result column="profits_type" jdbcType="INTEGER" property="profitsType" />
+    <result column="pay_way" jdbcType="INTEGER" property="payWay" />
+    <result column="pay_ment" jdbcType="INTEGER" property="payMent" />
+    <result column="year_earnings" jdbcType="VARCHAR" property="yearEarnings" />
+    <result column="deadline" jdbcType="VARCHAR" property="deadline" />
+    <result column="deadline_unit" jdbcType="INTEGER" property="deadlineUnit" />
+    <result column="buy_money" jdbcType="VARCHAR" property="buyMoney" />
+    <result column="increase_money" jdbcType="VARCHAR" property="increaseMoney" />
+    <result column="buy_copies" jdbcType="VARCHAR" property="buyCopies" />
+    <result column="raise_money" jdbcType="VARCHAR" property="raiseMoney" />
+    <result column="start_time" jdbcType="VARCHAR" property="startTime" />
+    <result column="end_time" jdbcType="VARCHAR" property="endTime" />
+    <result column="sell_time" jdbcType="VARCHAR" property="sellTime" />
+    <result column="interest_time" jdbcType="VARCHAR" property="interestTime" />
+    <result column="stop_time" jdbcType="VARCHAR" property="stopTime" />
+    <result column="raise_type" jdbcType="INTEGER" property="raiseType" />
+    <result column="t_interest" jdbcType="INTEGER" property="tInterest" />
+    <result column="recommend" jdbcType="VARCHAR" property="recommend" />
+    <result column="issuer" jdbcType="VARCHAR" property="issuer" />
+    <result column="p2p_explainBook_url" jdbcType="VARCHAR" property="p2pExplainbookUrl" />
+    <result column="p2p_riskBook_url" jdbcType="VARCHAR" property="p2pRiskbookUrl" />
+    <result column="p2p_sellBook_url" jdbcType="VARCHAR" property="p2pSellbookUrl" />
+    <result column="p2p_fileBook_url" jdbcType="VARCHAR" property="p2pFilebookUrl" />
+    <result column="p2p_desc" jdbcType="VARCHAR" property="p2pDesc" />
+    <result column="p2p_rule" jdbcType="VARCHAR" property="p2pRule" />
+    <result column="p2p_safe" jdbcType="VARCHAR" property="p2pSafe" />
+    <result column="p2p_issue" jdbcType="VARCHAR" property="p2pIssue" />
+    <result column="createtime" jdbcType="VARCHAR" property="createtime" />
+    <result column="netlineno" jdbcType="VARCHAR" property="netlineno" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, man_id, p2pNo, p2pName, p2pType, bankno, bankcard, raise_house, bank_sub_name, 
+    isLine, profits_type, pay_way, pay_ment, year_earnings, deadline, deadline_unit, 
+    buy_money, increase_money, buy_copies, raise_money, start_time, end_time, sell_time, 
+    interest_time, stop_time, raise_type, t_interest, recommend, issuer, p2p_explainBook_url, 
+    p2p_riskBook_url, p2p_sellBook_url, p2p_fileBook_url, p2p_desc, p2p_rule, p2p_safe, 
+    p2p_issue, createtime, netlineno
+  </sql>
+  <select id="selectByExample" parameterType="cn.yilucaifu.domain.P2pExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from p2p
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from p2p
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from p2p
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="cn.yilucaifu.domain.P2pExample">
+    delete from p2p
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="cn.yilucaifu.domain.P2p">
+    insert into p2p (id, man_id, p2pNo, 
+      p2pName, p2pType, bankno, 
+      bankcard, raise_house, bank_sub_name, 
+      isLine, profits_type, pay_way, 
+      pay_ment, year_earnings, deadline, 
+      deadline_unit, buy_money, increase_money, 
+      buy_copies, raise_money, start_time, 
+      end_time, sell_time, interest_time, 
+      stop_time, raise_type, t_interest, 
+      recommend, issuer, p2p_explainBook_url, 
+      p2p_riskBook_url, p2p_sellBook_url, p2p_fileBook_url, 
+      p2p_desc, p2p_rule, p2p_safe, 
+      p2p_issue, createtime, netlineno
+      )
+    values (#{id,jdbcType=INTEGER}, #{manId,jdbcType=INTEGER}, #{p2pno,jdbcType=VARCHAR}, 
+      #{p2pname,jdbcType=VARCHAR}, #{p2ptype,jdbcType=VARCHAR}, #{bankno,jdbcType=VARCHAR}, 
+      #{bankcard,jdbcType=VARCHAR}, #{raiseHouse,jdbcType=VARCHAR}, #{bankSubName,jdbcType=VARCHAR}, 
+      #{isline,jdbcType=INTEGER}, #{profitsType,jdbcType=INTEGER}, #{payWay,jdbcType=INTEGER}, 
+      #{payMent,jdbcType=INTEGER}, #{yearEarnings,jdbcType=VARCHAR}, #{deadline,jdbcType=VARCHAR}, 
+      #{deadlineUnit,jdbcType=INTEGER}, #{buyMoney,jdbcType=VARCHAR}, #{increaseMoney,jdbcType=VARCHAR}, 
+      #{buyCopies,jdbcType=VARCHAR}, #{raiseMoney,jdbcType=VARCHAR}, #{startTime,jdbcType=VARCHAR}, 
+      #{endTime,jdbcType=VARCHAR}, #{sellTime,jdbcType=VARCHAR}, #{interestTime,jdbcType=VARCHAR}, 
+      #{stopTime,jdbcType=VARCHAR}, #{raiseType,jdbcType=INTEGER}, #{tInterest,jdbcType=INTEGER}, 
+      #{recommend,jdbcType=VARCHAR}, #{issuer,jdbcType=VARCHAR}, #{p2pExplainbookUrl,jdbcType=VARCHAR}, 
+      #{p2pRiskbookUrl,jdbcType=VARCHAR}, #{p2pSellbookUrl,jdbcType=VARCHAR}, #{p2pFilebookUrl,jdbcType=VARCHAR}, 
+      #{p2pDesc,jdbcType=VARCHAR}, #{p2pRule,jdbcType=VARCHAR}, #{p2pSafe,jdbcType=VARCHAR}, 
+      #{p2pIssue,jdbcType=VARCHAR}, #{createtime,jdbcType=VARCHAR}, #{netlineno,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="cn.yilucaifu.domain.P2p">
+    insert into p2p
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="manId != null">
+        man_id,
+      </if>
+      <if test="p2pno != null">
+        p2pNo,
+      </if>
+      <if test="p2pname != null">
+        p2pName,
+      </if>
+      <if test="p2ptype != null">
+        p2pType,
+      </if>
+      <if test="bankno != null">
+        bankno,
+      </if>
+      <if test="bankcard != null">
+        bankcard,
+      </if>
+      <if test="raiseHouse != null">
+        raise_house,
+      </if>
+      <if test="bankSubName != null">
+        bank_sub_name,
+      </if>
+      <if test="isline != null">
+        isLine,
+      </if>
+      <if test="profitsType != null">
+        profits_type,
+      </if>
+      <if test="payWay != null">
+        pay_way,
+      </if>
+      <if test="payMent != null">
+        pay_ment,
+      </if>
+      <if test="yearEarnings != null">
+        year_earnings,
+      </if>
+      <if test="deadline != null">
+        deadline,
+      </if>
+      <if test="deadlineUnit != null">
+        deadline_unit,
+      </if>
+      <if test="buyMoney != null">
+        buy_money,
+      </if>
+      <if test="increaseMoney != null">
+        increase_money,
+      </if>
+      <if test="buyCopies != null">
+        buy_copies,
+      </if>
+      <if test="raiseMoney != null">
+        raise_money,
+      </if>
+      <if test="startTime != null">
+        start_time,
+      </if>
+      <if test="endTime != null">
+        end_time,
+      </if>
+      <if test="sellTime != null">
+        sell_time,
+      </if>
+      <if test="interestTime != null">
+        interest_time,
+      </if>
+      <if test="stopTime != null">
+        stop_time,
+      </if>
+      <if test="raiseType != null">
+        raise_type,
+      </if>
+      <if test="tInterest != null">
+        t_interest,
+      </if>
+      <if test="recommend != null">
+        recommend,
+      </if>
+      <if test="issuer != null">
+        issuer,
+      </if>
+      <if test="p2pExplainbookUrl != null">
+        p2p_explainBook_url,
+      </if>
+      <if test="p2pRiskbookUrl != null">
+        p2p_riskBook_url,
+      </if>
+      <if test="p2pSellbookUrl != null">
+        p2p_sellBook_url,
+      </if>
+      <if test="p2pFilebookUrl != null">
+        p2p_fileBook_url,
+      </if>
+      <if test="p2pDesc != null">
+        p2p_desc,
+      </if>
+      <if test="p2pRule != null">
+        p2p_rule,
+      </if>
+      <if test="p2pSafe != null">
+        p2p_safe,
+      </if>
+      <if test="p2pIssue != null">
+        p2p_issue,
+      </if>
+      <if test="createtime != null">
+        createtime,
+      </if>
+      <if test="netlineno != null">
+        netlineno,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="manId != null">
+        #{manId,jdbcType=INTEGER},
+      </if>
+      <if test="p2pno != null">
+        #{p2pno,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pname != null">
+        #{p2pname,jdbcType=VARCHAR},
+      </if>
+      <if test="p2ptype != null">
+        #{p2ptype,jdbcType=VARCHAR},
+      </if>
+      <if test="bankno != null">
+        #{bankno,jdbcType=VARCHAR},
+      </if>
+      <if test="bankcard != null">
+        #{bankcard,jdbcType=VARCHAR},
+      </if>
+      <if test="raiseHouse != null">
+        #{raiseHouse,jdbcType=VARCHAR},
+      </if>
+      <if test="bankSubName != null">
+        #{bankSubName,jdbcType=VARCHAR},
+      </if>
+      <if test="isline != null">
+        #{isline,jdbcType=INTEGER},
+      </if>
+      <if test="profitsType != null">
+        #{profitsType,jdbcType=INTEGER},
+      </if>
+      <if test="payWay != null">
+        #{payWay,jdbcType=INTEGER},
+      </if>
+      <if test="payMent != null">
+        #{payMent,jdbcType=INTEGER},
+      </if>
+      <if test="yearEarnings != null">
+        #{yearEarnings,jdbcType=VARCHAR},
+      </if>
+      <if test="deadline != null">
+        #{deadline,jdbcType=VARCHAR},
+      </if>
+      <if test="deadlineUnit != null">
+        #{deadlineUnit,jdbcType=INTEGER},
+      </if>
+      <if test="buyMoney != null">
+        #{buyMoney,jdbcType=VARCHAR},
+      </if>
+      <if test="increaseMoney != null">
+        #{increaseMoney,jdbcType=VARCHAR},
+      </if>
+      <if test="buyCopies != null">
+        #{buyCopies,jdbcType=VARCHAR},
+      </if>
+      <if test="raiseMoney != null">
+        #{raiseMoney,jdbcType=VARCHAR},
+      </if>
+      <if test="startTime != null">
+        #{startTime,jdbcType=VARCHAR},
+      </if>
+      <if test="endTime != null">
+        #{endTime,jdbcType=VARCHAR},
+      </if>
+      <if test="sellTime != null">
+        #{sellTime,jdbcType=VARCHAR},
+      </if>
+      <if test="interestTime != null">
+        #{interestTime,jdbcType=VARCHAR},
+      </if>
+      <if test="stopTime != null">
+        #{stopTime,jdbcType=VARCHAR},
+      </if>
+      <if test="raiseType != null">
+        #{raiseType,jdbcType=INTEGER},
+      </if>
+      <if test="tInterest != null">
+        #{tInterest,jdbcType=INTEGER},
+      </if>
+      <if test="recommend != null">
+        #{recommend,jdbcType=VARCHAR},
+      </if>
+      <if test="issuer != null">
+        #{issuer,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pExplainbookUrl != null">
+        #{p2pExplainbookUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pRiskbookUrl != null">
+        #{p2pRiskbookUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pSellbookUrl != null">
+        #{p2pSellbookUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pFilebookUrl != null">
+        #{p2pFilebookUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pDesc != null">
+        #{p2pDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pRule != null">
+        #{p2pRule,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pSafe != null">
+        #{p2pSafe,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pIssue != null">
+        #{p2pIssue,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null">
+        #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="netlineno != null">
+        #{netlineno,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="cn.yilucaifu.domain.P2pExample" resultType="java.lang.Long">
+    select count(*) from p2p
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update p2p
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.manId != null">
+        man_id = #{record.manId,jdbcType=INTEGER},
+      </if>
+      <if test="record.p2pno != null">
+        p2pNo = #{record.p2pno,jdbcType=VARCHAR},
+      </if>
+      <if test="record.p2pname != null">
+        p2pName = #{record.p2pname,jdbcType=VARCHAR},
+      </if>
+      <if test="record.p2ptype != null">
+        p2pType = #{record.p2ptype,jdbcType=VARCHAR},
+      </if>
+      <if test="record.bankno != null">
+        bankno = #{record.bankno,jdbcType=VARCHAR},
+      </if>
+      <if test="record.bankcard != null">
+        bankcard = #{record.bankcard,jdbcType=VARCHAR},
+      </if>
+      <if test="record.raiseHouse != null">
+        raise_house = #{record.raiseHouse,jdbcType=VARCHAR},
+      </if>
+      <if test="record.bankSubName != null">
+        bank_sub_name = #{record.bankSubName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.isline != null">
+        isLine = #{record.isline,jdbcType=INTEGER},
+      </if>
+      <if test="record.profitsType != null">
+        profits_type = #{record.profitsType,jdbcType=INTEGER},
+      </if>
+      <if test="record.payWay != null">
+        pay_way = #{record.payWay,jdbcType=INTEGER},
+      </if>
+      <if test="record.payMent != null">
+        pay_ment = #{record.payMent,jdbcType=INTEGER},
+      </if>
+      <if test="record.yearEarnings != null">
+        year_earnings = #{record.yearEarnings,jdbcType=VARCHAR},
+      </if>
+      <if test="record.deadline != null">
+        deadline = #{record.deadline,jdbcType=VARCHAR},
+      </if>
+      <if test="record.deadlineUnit != null">
+        deadline_unit = #{record.deadlineUnit,jdbcType=INTEGER},
+      </if>
+      <if test="record.buyMoney != null">
+        buy_money = #{record.buyMoney,jdbcType=VARCHAR},
+      </if>
+      <if test="record.increaseMoney != null">
+        increase_money = #{record.increaseMoney,jdbcType=VARCHAR},
+      </if>
+      <if test="record.buyCopies != null">
+        buy_copies = #{record.buyCopies,jdbcType=VARCHAR},
+      </if>
+      <if test="record.raiseMoney != null">
+        raise_money = #{record.raiseMoney,jdbcType=VARCHAR},
+      </if>
+      <if test="record.startTime != null">
+        start_time = #{record.startTime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.endTime != null">
+        end_time = #{record.endTime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sellTime != null">
+        sell_time = #{record.sellTime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.interestTime != null">
+        interest_time = #{record.interestTime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.stopTime != null">
+        stop_time = #{record.stopTime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.raiseType != null">
+        raise_type = #{record.raiseType,jdbcType=INTEGER},
+      </if>
+      <if test="record.tInterest != null">
+        t_interest = #{record.tInterest,jdbcType=INTEGER},
+      </if>
+      <if test="record.recommend != null">
+        recommend = #{record.recommend,jdbcType=VARCHAR},
+      </if>
+      <if test="record.issuer != null">
+        issuer = #{record.issuer,jdbcType=VARCHAR},
+      </if>
+      <if test="record.p2pExplainbookUrl != null">
+        p2p_explainBook_url = #{record.p2pExplainbookUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="record.p2pRiskbookUrl != null">
+        p2p_riskBook_url = #{record.p2pRiskbookUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="record.p2pSellbookUrl != null">
+        p2p_sellBook_url = #{record.p2pSellbookUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="record.p2pFilebookUrl != null">
+        p2p_fileBook_url = #{record.p2pFilebookUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="record.p2pDesc != null">
+        p2p_desc = #{record.p2pDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="record.p2pRule != null">
+        p2p_rule = #{record.p2pRule,jdbcType=VARCHAR},
+      </if>
+      <if test="record.p2pSafe != null">
+        p2p_safe = #{record.p2pSafe,jdbcType=VARCHAR},
+      </if>
+      <if test="record.p2pIssue != null">
+        p2p_issue = #{record.p2pIssue,jdbcType=VARCHAR},
+      </if>
+      <if test="record.createtime != null">
+        createtime = #{record.createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.netlineno != null">
+        netlineno = #{record.netlineno,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update p2p
+    set id = #{record.id,jdbcType=INTEGER},
+      man_id = #{record.manId,jdbcType=INTEGER},
+      p2pNo = #{record.p2pno,jdbcType=VARCHAR},
+      p2pName = #{record.p2pname,jdbcType=VARCHAR},
+      p2pType = #{record.p2ptype,jdbcType=VARCHAR},
+      bankno = #{record.bankno,jdbcType=VARCHAR},
+      bankcard = #{record.bankcard,jdbcType=VARCHAR},
+      raise_house = #{record.raiseHouse,jdbcType=VARCHAR},
+      bank_sub_name = #{record.bankSubName,jdbcType=VARCHAR},
+      isLine = #{record.isline,jdbcType=INTEGER},
+      profits_type = #{record.profitsType,jdbcType=INTEGER},
+      pay_way = #{record.payWay,jdbcType=INTEGER},
+      pay_ment = #{record.payMent,jdbcType=INTEGER},
+      year_earnings = #{record.yearEarnings,jdbcType=VARCHAR},
+      deadline = #{record.deadline,jdbcType=VARCHAR},
+      deadline_unit = #{record.deadlineUnit,jdbcType=INTEGER},
+      buy_money = #{record.buyMoney,jdbcType=VARCHAR},
+      increase_money = #{record.increaseMoney,jdbcType=VARCHAR},
+      buy_copies = #{record.buyCopies,jdbcType=VARCHAR},
+      raise_money = #{record.raiseMoney,jdbcType=VARCHAR},
+      start_time = #{record.startTime,jdbcType=VARCHAR},
+      end_time = #{record.endTime,jdbcType=VARCHAR},
+      sell_time = #{record.sellTime,jdbcType=VARCHAR},
+      interest_time = #{record.interestTime,jdbcType=VARCHAR},
+      stop_time = #{record.stopTime,jdbcType=VARCHAR},
+      raise_type = #{record.raiseType,jdbcType=INTEGER},
+      t_interest = #{record.tInterest,jdbcType=INTEGER},
+      recommend = #{record.recommend,jdbcType=VARCHAR},
+      issuer = #{record.issuer,jdbcType=VARCHAR},
+      p2p_explainBook_url = #{record.p2pExplainbookUrl,jdbcType=VARCHAR},
+      p2p_riskBook_url = #{record.p2pRiskbookUrl,jdbcType=VARCHAR},
+      p2p_sellBook_url = #{record.p2pSellbookUrl,jdbcType=VARCHAR},
+      p2p_fileBook_url = #{record.p2pFilebookUrl,jdbcType=VARCHAR},
+      p2p_desc = #{record.p2pDesc,jdbcType=VARCHAR},
+      p2p_rule = #{record.p2pRule,jdbcType=VARCHAR},
+      p2p_safe = #{record.p2pSafe,jdbcType=VARCHAR},
+      p2p_issue = #{record.p2pIssue,jdbcType=VARCHAR},
+      createtime = #{record.createtime,jdbcType=VARCHAR},
+      netlineno = #{record.netlineno,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="cn.yilucaifu.domain.P2p">
+    update p2p
+    <set>
+      <if test="manId != null">
+        man_id = #{manId,jdbcType=INTEGER},
+      </if>
+      <if test="p2pno != null">
+        p2pNo = #{p2pno,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pname != null">
+        p2pName = #{p2pname,jdbcType=VARCHAR},
+      </if>
+      <if test="p2ptype != null">
+        p2pType = #{p2ptype,jdbcType=VARCHAR},
+      </if>
+      <if test="bankno != null">
+        bankno = #{bankno,jdbcType=VARCHAR},
+      </if>
+      <if test="bankcard != null">
+        bankcard = #{bankcard,jdbcType=VARCHAR},
+      </if>
+      <if test="raiseHouse != null">
+        raise_house = #{raiseHouse,jdbcType=VARCHAR},
+      </if>
+      <if test="bankSubName != null">
+        bank_sub_name = #{bankSubName,jdbcType=VARCHAR},
+      </if>
+      <if test="isline != null">
+        isLine = #{isline,jdbcType=INTEGER},
+      </if>
+      <if test="profitsType != null">
+        profits_type = #{profitsType,jdbcType=INTEGER},
+      </if>
+      <if test="payWay != null">
+        pay_way = #{payWay,jdbcType=INTEGER},
+      </if>
+      <if test="payMent != null">
+        pay_ment = #{payMent,jdbcType=INTEGER},
+      </if>
+      <if test="yearEarnings != null">
+        year_earnings = #{yearEarnings,jdbcType=VARCHAR},
+      </if>
+      <if test="deadline != null">
+        deadline = #{deadline,jdbcType=VARCHAR},
+      </if>
+      <if test="deadlineUnit != null">
+        deadline_unit = #{deadlineUnit,jdbcType=INTEGER},
+      </if>
+      <if test="buyMoney != null">
+        buy_money = #{buyMoney,jdbcType=VARCHAR},
+      </if>
+      <if test="increaseMoney != null">
+        increase_money = #{increaseMoney,jdbcType=VARCHAR},
+      </if>
+      <if test="buyCopies != null">
+        buy_copies = #{buyCopies,jdbcType=VARCHAR},
+      </if>
+      <if test="raiseMoney != null">
+        raise_money = #{raiseMoney,jdbcType=VARCHAR},
+      </if>
+      <if test="startTime != null">
+        start_time = #{startTime,jdbcType=VARCHAR},
+      </if>
+      <if test="endTime != null">
+        end_time = #{endTime,jdbcType=VARCHAR},
+      </if>
+      <if test="sellTime != null">
+        sell_time = #{sellTime,jdbcType=VARCHAR},
+      </if>
+      <if test="interestTime != null">
+        interest_time = #{interestTime,jdbcType=VARCHAR},
+      </if>
+      <if test="stopTime != null">
+        stop_time = #{stopTime,jdbcType=VARCHAR},
+      </if>
+      <if test="raiseType != null">
+        raise_type = #{raiseType,jdbcType=INTEGER},
+      </if>
+      <if test="tInterest != null">
+        t_interest = #{tInterest,jdbcType=INTEGER},
+      </if>
+      <if test="recommend != null">
+        recommend = #{recommend,jdbcType=VARCHAR},
+      </if>
+      <if test="issuer != null">
+        issuer = #{issuer,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pExplainbookUrl != null">
+        p2p_explainBook_url = #{p2pExplainbookUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pRiskbookUrl != null">
+        p2p_riskBook_url = #{p2pRiskbookUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pSellbookUrl != null">
+        p2p_sellBook_url = #{p2pSellbookUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pFilebookUrl != null">
+        p2p_fileBook_url = #{p2pFilebookUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pDesc != null">
+        p2p_desc = #{p2pDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pRule != null">
+        p2p_rule = #{p2pRule,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pSafe != null">
+        p2p_safe = #{p2pSafe,jdbcType=VARCHAR},
+      </if>
+      <if test="p2pIssue != null">
+        p2p_issue = #{p2pIssue,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null">
+        createtime = #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="netlineno != null">
+        netlineno = #{netlineno,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="cn.yilucaifu.domain.P2p">
+    update p2p
+    set man_id = #{manId,jdbcType=INTEGER},
+      p2pNo = #{p2pno,jdbcType=VARCHAR},
+      p2pName = #{p2pname,jdbcType=VARCHAR},
+      p2pType = #{p2ptype,jdbcType=VARCHAR},
+      bankno = #{bankno,jdbcType=VARCHAR},
+      bankcard = #{bankcard,jdbcType=VARCHAR},
+      raise_house = #{raiseHouse,jdbcType=VARCHAR},
+      bank_sub_name = #{bankSubName,jdbcType=VARCHAR},
+      isLine = #{isline,jdbcType=INTEGER},
+      profits_type = #{profitsType,jdbcType=INTEGER},
+      pay_way = #{payWay,jdbcType=INTEGER},
+      pay_ment = #{payMent,jdbcType=INTEGER},
+      year_earnings = #{yearEarnings,jdbcType=VARCHAR},
+      deadline = #{deadline,jdbcType=VARCHAR},
+      deadline_unit = #{deadlineUnit,jdbcType=INTEGER},
+      buy_money = #{buyMoney,jdbcType=VARCHAR},
+      increase_money = #{increaseMoney,jdbcType=VARCHAR},
+      buy_copies = #{buyCopies,jdbcType=VARCHAR},
+      raise_money = #{raiseMoney,jdbcType=VARCHAR},
+      start_time = #{startTime,jdbcType=VARCHAR},
+      end_time = #{endTime,jdbcType=VARCHAR},
+      sell_time = #{sellTime,jdbcType=VARCHAR},
+      interest_time = #{interestTime,jdbcType=VARCHAR},
+      stop_time = #{stopTime,jdbcType=VARCHAR},
+      raise_type = #{raiseType,jdbcType=INTEGER},
+      t_interest = #{tInterest,jdbcType=INTEGER},
+      recommend = #{recommend,jdbcType=VARCHAR},
+      issuer = #{issuer,jdbcType=VARCHAR},
+      p2p_explainBook_url = #{p2pExplainbookUrl,jdbcType=VARCHAR},
+      p2p_riskBook_url = #{p2pRiskbookUrl,jdbcType=VARCHAR},
+      p2p_sellBook_url = #{p2pSellbookUrl,jdbcType=VARCHAR},
+      p2p_fileBook_url = #{p2pFilebookUrl,jdbcType=VARCHAR},
+      p2p_desc = #{p2pDesc,jdbcType=VARCHAR},
+      p2p_rule = #{p2pRule,jdbcType=VARCHAR},
+      p2p_safe = #{p2pSafe,jdbcType=VARCHAR},
+      p2p_issue = #{p2pIssue,jdbcType=VARCHAR},
+      createtime = #{createtime,jdbcType=VARCHAR},
+      netlineno = #{netlineno,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+    <!--myMapper-->
+
+    <select id="getP2pByAll" resultType="cn.yilucaifu.domain.P2p">
+        select
+        <include refid="Base_Column_List" />
+        from p2p;
+    </select>
+
+    <insert id="insertSelectiveBackId" useGeneratedKeys="true" keyProperty="id" parameterType="cn.yilucaifu.domain.P2p">
+        insert into p2p
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="manId != null">
+                man_id,
+            </if>
+            <if test="p2pno != null">
+                p2pNo,
+            </if>
+            <if test="p2pname != null">
+                p2pName,
+            </if>
+            <if test="p2ptype != null">
+                p2pType,
+            </if>
+            <if test="bankno != null">
+                bankno,
+            </if>
+            <if test="bankcard != null">
+                bankcard,
+            </if>
+            <if test="raiseHouse != null">
+                raise_house,
+            </if>
+            <if test="bankSubName != null">
+                bank_sub_name,
+            </if>
+            <if test="isline != null">
+                isLine,
+            </if>
+            <if test="profitsType != null">
+                profits_type,
+            </if>
+            <if test="payWay != null">
+                pay_way,
+            </if>
+            <if test="payMent != null">
+                pay_ment,
+            </if>
+            <if test="yearEarnings != null">
+                year_earnings,
+            </if>
+            <if test="deadline != null">
+                deadline,
+            </if>
+            <if test="deadlineUnit != null">
+                deadline_unit,
+            </if>
+            <if test="buyMoney != null">
+                buy_money,
+            </if>
+            <if test="increaseMoney != null">
+                increase_money,
+            </if>
+            <if test="buyCopies != null">
+                buy_copies,
+            </if>
+            <if test="raiseMoney != null">
+                raise_money,
+            </if>
+            <if test="startTime != null">
+                start_time,
+            </if>
+            <if test="endTime != null">
+                end_time,
+            </if>
+            <if test="sellTime != null">
+                sell_time,
+            </if>
+            <if test="interestTime != null">
+                interest_time,
+            </if>
+            <if test="stopTime != null">
+                stop_time,
+            </if>
+          <if test="raiseType != null">
+            raise_type,
+          </if>
+          <if test="tInterest != null">
+            t_interest,
+          </if>
+            <if test="recommend != null">
+                recommend,
+            </if>
+            <if test="issuer != null">
+                issuer,
+            </if>
+            <if test="p2pExplainbookUrl != null">
+                p2p_explainBook_url,
+            </if>
+            <if test="p2pRiskbookUrl != null">
+                p2p_riskBook_url,
+            </if>
+            <if test="p2pSellbookUrl != null">
+                p2p_sellBook_url,
+            </if>
+            <if test="p2pFilebookUrl != null">
+                p2p_fileBook_url,
+            </if>
+            <if test="p2pDesc != null">
+                p2p_desc,
+            </if>
+            <if test="p2pRule != null">
+                p2p_rule,
+            </if>
+            <if test="p2pSafe != null">
+                p2p_safe,
+            </if>
+            <if test="p2pIssue != null">
+                p2p_issue,
+            </if>
+            <if test="createtime != null">
+                createtime,
+            </if>
+            <if test="netlineno != null">
+                netlineno,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="manId != null">
+                #{manId,jdbcType=INTEGER},
+            </if>
+            <if test="p2pno != null">
+                #{p2pno,jdbcType=VARCHAR},
+            </if>
+            <if test="p2pname != null">
+                #{p2pname,jdbcType=VARCHAR},
+            </if>
+            <if test="p2ptype != null">
+                #{p2ptype,jdbcType=VARCHAR},
+            </if>
+            <if test="bankno != null">
+                #{bankno,jdbcType=VARCHAR},
+            </if>
+            <if test="bankcard != null">
+                #{bankcard,jdbcType=VARCHAR},
+            </if>
+            <if test="raiseHouse != null">
+                #{raiseHouse,jdbcType=VARCHAR},
+            </if>
+            <if test="bankSubName != null">
+                #{bankSubName,jdbcType=VARCHAR},
+            </if>
+            <if test="isline != null">
+                #{isline,jdbcType=INTEGER},
+            </if>
+            <if test="profitsType != null">
+                #{profitsType,jdbcType=INTEGER},
+            </if>
+            <if test="payWay != null">
+                #{payWay,jdbcType=INTEGER},
+            </if>
+            <if test="payMent != null">
+                #{payMent,jdbcType=INTEGER},
+            </if>
+            <if test="yearEarnings != null">
+                #{yearEarnings,jdbcType=VARCHAR},
+            </if>
+            <if test="deadline != null">
+                #{deadline,jdbcType=VARCHAR},
+            </if>
+            <if test="deadlineUnit != null">
+                #{deadlineUnit,jdbcType=INTEGER},
+            </if>
+            <if test="buyMoney != null">
+                #{buyMoney,jdbcType=VARCHAR},
+            </if>
+            <if test="increaseMoney != null">
+                #{increaseMoney,jdbcType=VARCHAR},
+            </if>
+            <if test="buyCopies != null">
+                #{buyCopies,jdbcType=VARCHAR},
+            </if>
+            <if test="raiseMoney != null">
+                #{raiseMoney,jdbcType=VARCHAR},
+            </if>
+            <if test="startTime != null">
+                #{startTime,jdbcType=VARCHAR},
+            </if>
+            <if test="endTime != null">
+                #{endTime,jdbcType=VARCHAR},
+            </if>
+            <if test="sellTime != null">
+                #{sellTime,jdbcType=VARCHAR},
+            </if>
+            <if test="interestTime != null">
+                #{interestTime,jdbcType=VARCHAR},
+            </if>
+            <if test="stopTime != null">
+                #{stopTime,jdbcType=VARCHAR},
+            </if>
+          <if test="raiseType != null">
+            #{raiseType,jdbcType=INTEGER},
+          </if>
+          <if test="tInterest != null">
+            #{tInterest,jdbcType=INTEGER},
+          </if>
+            <if test="recommend != null">
+                #{recommend,jdbcType=VARCHAR},
+            </if>
+            <if test="issuer != null">
+                #{issuer,jdbcType=VARCHAR},
+            </if>
+            <if test="p2pExplainbookUrl != null">
+                #{p2pExplainbookUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="p2pRiskbookUrl != null">
+                #{p2pRiskbookUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="p2pSellbookUrl != null">
+                #{p2pSellbookUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="p2pFilebookUrl != null">
+                #{p2pFilebookUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="p2pDesc != null">
+                #{p2pDesc,jdbcType=VARCHAR},
+            </if>
+            <if test="p2pRule != null">
+                #{p2pRule,jdbcType=VARCHAR},
+            </if>
+            <if test="p2pSafe != null">
+                #{p2pSafe,jdbcType=VARCHAR},
+            </if>
+            <if test="p2pIssue != null">
+                #{p2pIssue,jdbcType=VARCHAR},
+            </if>
+            <if test="createtime != null">
+                #{createtime,jdbcType=VARCHAR},
+            </if>
+            <if test="netlineno != null">
+                #{netlineno,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+</mapper>

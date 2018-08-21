@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence_ylcf.yiluGrowth.YiluGrowthColorDao">
+	
+	<select id="selectYiluGrowthColor" resultType="cn.yilucaifu.domain.yiluGrowth.YiluGrowthColor">
+		select * from yilu_growth_color
+	</select>
+	
+	<insert id="addYiluGrowthColor" parameterType="cn.yilucaifu.domain.yiluGrowth.YiluGrowthColor">
+		insert into yilu_growth_color(type,typeColor) values(#{type},#{typeColor})
+	</insert>
+	
+	<select id="selectYiluGrowthColorById" parameterType="java.lang.Integer" resultType="cn.yilucaifu.domain.yiluGrowth.YiluGrowthColor">
+		select * from yilu_growth_color where id = #{id}
+	</select>
+	
+	<update id="updateYiluGrowthColor" parameterType="cn.yilucaifu.domain.yiluGrowth.YiluGrowthColor">
+		update yilu_growth_color set type = #{type},typeColor = #{typeColor} where id = #{id}
+	</update>
+	
+</mapper>

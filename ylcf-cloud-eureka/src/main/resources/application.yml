@@ -1,6 +1,6 @@
 spring:
   application:
-    name: eureka-server
+    name: eureka-forezp
 #开启权限认证
   security:
     basic:

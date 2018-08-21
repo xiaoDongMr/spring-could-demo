@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence.PinganFundinfoDao">
+	<sql id="accountColumn">
+		a.id,
+		a.filetime,
+		a.createtime,
+		a.distributorcode,
+		<!-- case when fundcode = '180008' then '一路宝' else fundname end as fundname, -->
+		fundname,
+		a.fundcode,
+		a.fundnameeng,
+		a.totalfundvol,
+		a.fundstatus,
+		a.nav,
+		a.currencytype,
+		a.custodiancode,
+		a.tano,
+		a.fundsponsor,
+		a.managercode,
+		a.ipostartdate,
+		a.ipoenddate,
+		a.fundsize,
+		a.tradingprice,
+		a.updatedate,
+		a.facevalue,
+		a.convertstatus,
+		a.dividentdate,
+		a.registrationdate,
+		a.substype,
+		a.nexttradedate,
+		a.valueline,
+		a.intmode,
+		a.intstart,
+		a.intenddate,
+		a.accumulativenav,
+		a.feefactor,
+		a.comtype,
+		a.fundtype,
+		a.defdividendmethod,
+		a.fundriskgrade,
+		a.fundriskgradedesc,
+		a.fundriskgradeinfo,
+		a.totalincome,
+		a.ttincome,
+		a.incomeyield,
+		a.summary,
+		a.dividendmodify,
+		a.savepalnmodify,
+		a.disstatus,
+		a.tradingmethod,
+		a.cashincreflag,
+		a.originalfundcode,
+		a.investperiods,
+		a.wellsalesflag
+	</sql>
+
+	<select id="findFundinfoByFundcode" parameterType="String"
+		resultType="cn.yilucaifu.domain.fundinfo.PinganFundinfo">
+		select
+		<include refid="accountColumn" />
+		from yilucaifu.pingan_fundinfo a where a.fundcode =
+		#{fundcode} and
+		distributorcode=#{distributorcode} order by
+		a.createtime desc limit 1;
+	</select>
+
+	<select id="getHoldFundInfo" parameterType="java.util.List" resultType="java.util.Map">
+		SELECT
+		fundcode,
+		fundname,
+		CASE
+		WHEN (fundtype='0') THEN '普通型'
+		WHEN (fundtype='1') THEN '股票型'
+		WHEN (fundtype='2') THEN '货币型'
+		WHEN (fundtype='3') THEN '股票型'
+		WHEN (fundtype='6') THEN '债券型'
+		WHEN (fundtype='7') THEN '保本型'
+		WHEN (fundtype='8') THEN '指数型'
+		WHEN (fundtype='9') THEN '短债型'
+		WHEN (fundtype='a') THEN 'QDII型'
+		WHEN (fundtype='b') THEN '混合型'
+		WHEN (fundtype='m') THEN 'ETF'
+		WHEN (fundtype='o') THEN 'LOF'
+		ELSE '普通型'
+		END fundtype,
+		fundtype AS fund_type,
+		fundtype AS fundTypeNum,
+		fundriskgrade,
+		CONCAT(fundriskgradedesc,'风险') AS fundriskdes,
+		ROUND(incomeyield,2) AS accumNet,
+		ROUND(ttincome,2) AS unitNet,
+		ROUND(incomeyield,2) AS accum_net,
+		ROUND(ttincome,2) AS unit_net
+		FROM yilucaifu.pingan_fundinfo
+		WHERE 1=1
+		<if test="list !=null and list.size > 0">
+			and fundcode IN
+			<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+
+</mapper>

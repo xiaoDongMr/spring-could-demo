@@ -1,0 +1,1381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence_jl.FundDetailDao">
+    <sql id="kindAvg">
+        info.FUND_TYPE fund_type,
+        info.FUND_CODE fund_code,
+        COUNT(calc.unit_net_chng_pct_1_week) count_1_week,
+        COUNT(calc.unit_net_chng_pct_1_mon) count_1_mon,
+        COUNT(calc.unit_net_chng_pct_3_mon) count_3_mon,
+        COUNT(calc.unit_net_chng_pct_6_mon) count_6_mon,
+        COUNT(calc.unit_net_chng_pct_1_year) count_1_year,
+        COUNT(calc.unit_net_chng_pct_2_year) count_2_year,
+        COUNT(calc.unit_net_chng_pct_3_year) count_3_year,
+        COUNT(calc.unit_net_chng_pct_tyear) count_pct_tyear,
+        TRUNCATE(AVG(calc.unit_net_chng_pct_1_week),2) pct_1_week,
+        TRUNCATE(AVG(calc.unit_net_chng_pct_1_mon),2) pct_1_mon,
+        TRUNCATE(AVG(calc.unit_net_chng_pct_3_mon),2) pct_3_mon,
+        TRUNCATE(AVG(calc.unit_net_chng_pct_6_mon),2) pct_6_mon,
+        TRUNCATE(AVG(calc.unit_net_chng_pct_1_year),2) pct_1_year,
+        TRUNCATE(AVG(calc.unit_net_chng_pct_2_year),2) pct_2_year,
+        TRUNCATE(AVG(calc.unit_net_chng_pct_3_year),2) pct_3_year,
+        TRUNCATE(AVG(calc.unit_net_chng_pct_tyear),2) pct_tyear
+    </sql>
+    <sql id="kindAvgCoin">
+        info.FUND_TYPE fund_type,
+        info.FUND_CODE fund_code,
+        COUNT(mny.OWK_YLD) count_1_week,
+        COUNT(mny.OMTH_YLD) count_1_mon,
+        COUNT(mny.QUA_YLD) count_3_mon,
+        COUNT(mny.HLFYR_YLD) count_6_mon,
+        COUNT(mny.OYR_YLD) count_1_year,
+        COUNT(mny.TYR_YLD) count_2_year,
+        COUNT(mny.THYR_YLD) count_3_year,
+        COUNT(mny.YTD_YLD) count_pct_tyear,
+        TRUNCATE(AVG(mny.OWK_YLD),2) pct_1_week,
+        TRUNCATE(AVG(mny.OMTH_YLD),2) pct_1_mon,
+        TRUNCATE(AVG(mny.QUA_YLD),2) pct_3_mon,
+        TRUNCATE(AVG(mny.HLFYR_YLD),2) pct_6_mon,
+        TRUNCATE(AVG(mny.OYR_YLD),2) pct_1_year,
+        TRUNCATE(AVG(mny.TYR_YLD),2) pct_2_year,
+        TRUNCATE(AVG(mny.THYR_YLD),2) pct_3_year,
+        TRUNCATE(AVG(mny.YTD_YLD),2) pct_tyear
+    </sql>
+
+    <!--基金详情页-->
+    <!--获取基金的日申购金额-->
+    <select id="getValLimit" resultType="java.util.Map">
+    SELECT
+      EVENT_TYPE,
+      VAL_LIMIT,
+      CHNG_TYPE,REMARK
+    FROM
+      FND_STATUS_CHNG
+    WHERE isvalid = 1
+      AND EVENT_TYPE = 1
+      AND CHNG_TYPE = '2'
+      AND INNER_CODE = #{inner_code}
+    ORDER BY CHANGE_DATE DESC
+    </select>
+
+    <!-- 基金资产配置 -->
+    <select id="queryFundAsset" resultType="cn.yilucaifu.domain.fundinfo.FundAsset">
+        SELECT
+        Date(a.enddate) enddate,
+        floor(IFNULL(a.stk_val_na_prop,0)) stk_val_na_prop,
+        floor(IFNULL(a.bnd_val_na_prop,0)) bnd_val_na_prop,
+        floor(IFNULL(a.dep_val_na_prop,0)) dep_val_na_prop,
+        if((100-floor(IFNULL(a.stk_val_na_prop,0))-floor(IFNULL(a.bnd_val_na_prop,0))-floor(IFNULL(a.dep_val_na_prop,0)))&lt;0,
+        0,(100-floor(IFNULL(a.stk_val_na_prop,0))-floor(IFNULL(a.bnd_val_na_prop,0))-floor(IFNULL(a.dep_val_na_prop,0)))) oth_val_na_prop,
+        a.fund_id,a.source
+        FROM FND_ASSET_CONF a
+        WHERE fund_id = #{fund_id} ORDER BY enddate DESC LIMIT 1;
+    </select>
+
+    <!-- 十大重仓持股 -->
+    <select id="queryFundStkOfTen" resultType="cn.yilucaifu.domain.fundinfo.FundStk">
+        SELECT
+        DATE(a.enddate) enddate,a.stocksname,a.hld_stk_val/10000
+        hld_stk_val,a.stk_inner_code,a.fund_id,a.hld_stk_sum,LEFT(a.tot_val_prop,5)
+        tot_val_prop,a.stockcode
+        FROM FND_STK_SUM_CONF a
+        WHERE
+        a.source in (1,2,4,5) AND
+        a.fund_id = #{fund_id} AND a.enddate
+        = (SELECT MAX(enddate) FROM
+        FND_STK_SUM_CONF WHERE source in (1,2,4,5) and fund_id = a.fund_id)
+        ORDER BY a.hld_stk_val DESC LIMIT 10
+    </select>
+
+    <!-- 基金公告 -->
+    <select id="queryFundAnnounce" resultType="cn.yilucaifu.domain.fundinfo.FundAnnounce">
+        select
+        d.title,d.source,date(d.declaredate) declaredate,
+        a.disc_id
+        from DISC_FND a
+        left join DISC_MAIN_FND d on a.disc_id = d.disc_id
+        where inner_code =
+        #{inner_code} order by declaredate desc
+        limit #{start},#{pageSize};
+    </select>
+
+    <!--根据fund_code获取基金详情信息-->
+    <select id="queryFundDetailByFundcode" resultType="cn.yilucaifu.domain.fundinfo.FundDetail">
+        SELECT
+        info.is_quick_redeem,
+        info.inner_code,
+        info.fund_rate,
+        info.auto_invest_fund_rate,
+        info.fund_transfer,
+        buy.chag_rate_up_lim,
+        CASE
+        WHEN
+        info.fund_rate = 0 THEN 0
+        WHEN
+        chag_rate_up_lim IS NULL THEN 0
+        WHEN
+        chag_rate_up_lim IS NOT NULL  THEN ROUND(chag_rate_up_lim*IFNULL(info.fund_rate/10,1),4)
+        END AS cur_fund_rate,
+        CASE
+        WHEN
+        info.auto_invest_fund_rate = 0 THEN 0
+        WHEN
+        chag_rate_up_lim IS NULL THEN 0
+        WHEN
+        chag_rate_up_lim IS NOT NULL  THEN ROUND(chag_rate_up_lim*IFNULL(info.auto_invest_fund_rate/10,1),4)
+        END AS auto_invest_cur_fund_rate,
+        info.status,
+        info.fund_status,
+        info.fundsname,
+        info.fundname,
+        info.is_auto_invest,
+        info.fund_id,
+        info.fund_code,
+        info.mana_name,
+        info.trup_name,
+        info.fund_type,
+        CASE WHEN
+        info.fund_type
+        =
+        1 THEN '封闭式基金'
+        WHEN info.fund_type = 2 THEN '股票型'
+        WHEN
+        info.fund_type =
+        3 THEN '混合型'
+        WHEN info.fund_type = 4 THEN 'ETF'
+        WHEN
+        info.fund_type = 5
+        THEN '债券型'
+        WHEN info.fund_type = 6 THEN '货币型'
+        WHEN
+        info.fund_type = 7
+        THEN 'QDII'
+        WHEN info.fund_type = 8 THEN '其他'
+        WHEN
+        info.fund_type = 9
+        THEN '指数型'
+        WHEN info.fund_type = 10 THEN '保本基金'
+        WHEN
+        info.fund_type = 11
+        THEN '理财基金'
+        END AS invst_type_mark,
+        DATE(info.estab_date)
+        estab_date,
+        CASE WHEN (info.fund_type = 6 OR info.fund_type = 11)
+        THEN DATE(incm.enddate)
+        ELSE DATE(val.enddate)
+        END enddate,
+        DATE(calc.tradedate) tradedate,
+        DATE(rsd.executedate) executedate,
+        DATE(rsd.enddate) raiseEnddate,
+        ROUND(calc.unit_net_chng_pct,2) unit_net_chng_pct,
+        (IFNULL(val.unit_net, 0)+IFNULL(incm.tenthou_unit_incm, 0)) unit_net,
+        (IFNULL(val.accum_net,0)+IFNULL(incm.year_yld,0)) accum_net,
+        ROUND(IF(calc.unit_net_chng_pct_1_week IS
+        NULL AND mny.owk_yld IS NULL, NULL,
+        IFNULL(calc.unit_net_chng_pct_1_week,0)+IFNULL(mny.owk_yld,0)),2)
+        unit_net_chng_pct_1_week,
+        ROUND(IF(calc.unit_net_chng_pct_1_mon IS
+        NULL AND mny.qua_yld IS NULL, NULL,
+        IFNULL(calc.unit_net_chng_pct_1_mon,0)+IFNULL(mny.omth_yld,0)),2)
+        unit_net_chng_pct_1_mon,
+        ROUND(IF(calc.unit_net_chng_pct_3_mon IS
+        NULL AND mny.qua_yld IS NULL, NULL,
+        IFNULL(calc.unit_net_chng_pct_3_mon,0)+IFNULL(mny.qua_yld,0)),2)
+        unit_net_chng_pct_3_mon,
+        ROUND(IF(calc.unit_net_chng_pct_6_mon IS
+        NULL AND mny.qua_yld IS NULL, NULL,
+        IFNULL(calc.unit_net_chng_pct_6_mon,0)+IFNULL(mny.hlfyr_yld,0)),2)
+        unit_net_chng_pct_6_mon,
+        ROUND(IF(calc.unit_net_chng_pct_1_year IS
+        NULL AND mny.oyr_yld IS NULL ,
+        NULL,IFNULL(calc.unit_net_chng_pct_1_year,0)+IFNULL(mny.oyr_yld,0)),2)
+        unit_net_chng_pct_1_year,
+        ROUND(IF(calc.unit_net_chng_pct_base IS
+        NULL AND mny.esta_yld IS NULL ,
+        NULL,IFNULL(calc.unit_net_chng_pct_base,0)+IFNULL(mny.esta_yld,0)),2)
+        unit_net_chng_pct_base,
+        ROUND(ifnull(buy.quota,0),2) quota,
+        buy.quota_unit_mark,
+        CASE
+        WHEN
+        buy.quota_unit_mark IS NULL THEN '元'
+        WHEN
+        buy.quota_unit_mark = '份' THEN '元'
+        WHEN buy.quota_unit_mark IS NOT NULL THEN buy.quota_unit_mark
+        END AS quota_unit_mark,
+        ROUND(fin.merge_equity/100000000,2) merge_equity,
+        ROUND(fin.merge_share/10000,2) merge_share,
+        ROUND(iss.act_val/100000000,2) first_equity,
+        DATE(fin.rpt_date) rpt_date
+        FROM FND_GEN_INFO info
+        LEFT JOIN
+        YLCF_FND_NET_VAL val ON info.inner_code =val.inner_code
+        LEFT JOIN
+        ylcf_ana_fnd_nav_calc calc ON info.inner_code =calc.inner_code
+        LEFT
+        JOIN YLCF_FUND_BUY_INFO buy ON info.inner_code =buy.inner_code
+        LEFT JOIN
+        (SELECT
+        idx.inner_code,merge_equity,
+        ifnull(merge_equity/ifnull(idx.UNIT_NET_VAL,1),0) merge_share,
+        idx.RPT_DATE rpt_date,
+        inf.fund_code fund_code
+        FROM FND_FIN_IDX idx
+        LEFT JOIN
+        FND_GEN_INFO inf
+        ON
+        idx.inner_code = inf.inner_code
+        WHERE
+        inf.fund_code = #{fund_code}
+        AND RPT_SRC IN(1,2,3,4,5,6)
+        AND merge_equity IS  NOT NULL
+        AND merge_equity != ''
+        ORDER BY
+        ENDDATE DESC LIMIT
+        1) fin ON info.fund_code = fin.fund_code
+        LEFT JOIN YLCF_FND_MNY_INCM
+        incm ON info.inner_code = incm.inner_code
+        LEFT JOIN
+        YLCF_ANA_FND_MNY_RETRUN mny ON info.inner_code = mny.inner_code
+        LEFT JOIN
+        YLCF_VIEW_FND_RAISEEND rsd ON info.inner_code = rsd.inner_code
+        LEFT JOIN
+        FND_OEF_ISS iss ON info.inner_code = iss.inner_code
+        WHERE
+        info.fund_code = #{fund_code}
+        AND info.ISVALID = 1
+        AND info.FUND_STATUS != 3
+        LIMIT 1
+    </select>
+
+    <!-- 查询非货基历史净值和货基的七日年化 分页-->
+    <select id="getFundAccumNetHistory" resultType="cn.yilucaifu.domain.fundinfo.FundDetail">
+        SELECT
+        ifnull(DATE(TRADEDATE),DATE(enddate) ) AS tradedate,
+        info.INNER_CODE,
+        (ifnull(val.unit_net,0)+ifnull(incm.tenthou_unit_incm, 0)) unit_net,
+        (ifnull(val.accum_net,0)+ifnull(incm.year_yld,0))accum_net,
+        ROUND(unit_net_chng_pct,2) unit_net_chng_pct
+        FROM
+        FND_GEN_INFO info LEFT JOIN
+        ANA_FND_NAV_CALC val ON info.INNER_CODE=
+        val.INNER_CODE AND
+        val.isvalid=1
+        LEFT JOIN
+        FND_MNY_INCM incm ON info.INNER_CODE =
+        incm.INNER_CODE AND incm.isvalid=1
+        WHERE
+        info.FUND_CODE = #{fund_code}
+        AND info.ISVALID = 1
+        ORDER BY 1 DESC limit #{start},#{pageSize}
+    </select>
+
+    <!--获取基金的同类平均（同fund_type，不同阶段对应增长率的平均值）-->
+    <select id="getFundKindAvg"  resultType="java.util.Map">
+        SELECT
+          *
+        FROM
+        (SELECT
+            <include refid="kindAvg" />
+        FROM
+        ylcf_ana_fnd_nav_calc calc
+        INNER JOIN
+        FND_GEN_INFO info
+        ON calc.inner_code = info.INNER_CODE
+        WHERE
+        info.ISVALID = 1
+        AND
+        info.FUND_TYPE != 6
+        AND
+        info.FUND_TYPE != 11
+        GROUP BY info.FUND_TYPE
+        UNION ALL
+        SELECT
+            <include refid="kindAvgCoin" />
+        FROM
+        YLCF_ANA_FND_MNY_RETRUN mny
+        INNER JOIN FND_GEN_INFO info
+        ON info.INNER_CODE = mny.INNER_CODE
+        WHERE
+        info.ISVALID = 1
+        AND
+        info.FUND_TYPE = 6 OR
+        info.FUND_TYPE = 11
+        GROUP BY
+        info.FUND_TYPE) a
+        WHERE a.fund_type = #{fund_type}
+    </select>
+
+    <!--获取货币和理财型基金的不同阶段的同类排名-->
+    <select id="getKindRankOfCoin" resultType="java.util.Map">
+        SELECT
+        DATE(mny.ENDDATE) enddate,
+        info.FUND_CODE fundcode,
+        (SELECT
+        IF(COUNT(mn.OWK_YLD),COUNT(mn.OWK_YLD) + 1,0)
+        FROM
+        YLCF_ANA_FND_MNY_RETRUN mn
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = mn.INNER_CODE
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        mn.OWK_YLD IS NOT NULL
+        AND
+        mn.OWK_YLD != ''
+        AND
+        mn.OWK_YLD > mny.OWK_YLD
+        ) sum_1_week,
+        ROUND(IFNULL(mny.OWK_YLD,0),2) unit_net_chng_pct_1_week,
+        (SELECT
+        IF(COUNT(mn.OMTH_YLD),COUNT(mn.OMTH_YLD) + 1,0)
+        FROM
+        YLCF_ANA_FND_MNY_RETRUN mn
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = mn.INNER_CODE
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        mn.OMTH_YLD IS NOT NULL
+        AND
+        mn.OMTH_YLD != ''
+        AND
+        mn.OMTH_YLD > mny.OMTH_YLD
+        ) sum_1_mon,
+        ROUND(IFNULL(mny.OMTH_YLD,0),2) unit_net_chng_pct_1_mon,
+        (SELECT
+        IF(COUNT(mn.QUA_YLD),COUNT(mn.QUA_YLD) + 1,0)
+        FROM
+        YLCF_ANA_FND_MNY_RETRUN mn
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = mn.INNER_CODE
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        mn.QUA_YLD IS NOT NULL
+        AND
+        mn.QUA_YLD != ''
+        AND
+        mn.QUA_YLD > mny.QUA_YLD
+        ) sum_3_mon,
+        ROUND(IFNULL(mny.QUA_YLD,0),2) unit_net_chng_pct_3_mon,
+        (SELECT
+        IF(COUNT(mn.HLFYR_YLD),COUNT(mn.HLFYR_YLD) + 1,0)
+        FROM
+        YLCF_ANA_FND_MNY_RETRUN mn
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = mn.INNER_CODE
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        mn.HLFYR_YLD IS NOT NULL
+        AND
+        mn.HLFYR_YLD != ''
+        AND
+        mn.HLFYR_YLD > mny.HLFYR_YLD
+        ) sum_6_mon,
+        ROUND(IFNULL(mny.HLFYR_YLD,0),2) unit_net_chng_pct_6_mon,
+        (SELECT
+        IF(COUNT(mn.OYR_YLD),COUNT(mn.OYR_YLD) + 1,0)
+        FROM
+        YLCF_ANA_FND_MNY_RETRUN mn
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = mn.INNER_CODE
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        mn.OYR_YLD IS NOT NULL
+        AND
+        mn.OYR_YLD != ''
+        AND
+        mn.OYR_YLD > mny.OYR_YLD
+        ) sum_1_year,
+        ROUND(IFNULL(mny.OYR_YLD,0),2) unit_net_chng_pct_1_year,
+        (SELECT
+        IF(COUNT(mn.TYR_YLD),COUNT(mn.TYR_YLD) + 1,0)
+        FROM
+        YLCF_ANA_FND_MNY_RETRUN mn
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = mn.INNER_CODE
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        mn.TYR_YLD IS NOT NULL
+        AND
+        mn.TYR_YLD != ''
+        AND
+        mn.TYR_YLD > mny.TYR_YLD
+        ) sum_2_year,
+        ROUND(IFNULL(mny.TYR_YLD,0),2) unit_net_chng_pct_2_year,
+        (SELECT
+        IF(COUNT(mn.THYR_YLD),COUNT(mn.THYR_YLD) + 1,0)
+        FROM
+        YLCF_ANA_FND_MNY_RETRUN mn
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = mn.INNER_CODE
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        mn.THYR_YLD IS NOT NULL
+        AND
+        mn.THYR_YLD != ''
+        AND
+        mn.THYR_YLD > mny.THYR_YLD
+        ) sum_3_year,
+        ROUND(IFNULL(mny.THYR_YLD,0),2) unit_net_chng_pct_3_year,
+        (SELECT
+        IF(COUNT(mn.YTD_YLD),COUNT(mn.YTD_YLD) + 1,0)
+        FROM
+        YLCF_ANA_FND_MNY_RETRUN mn
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = mn.INNER_CODE
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        mn.YTD_YLD IS NOT NULL
+        AND
+        mn.YTD_YLD != ''
+        AND
+        mn.YTD_YLD > mny.YTD_YLD
+        ) sum_tyear,
+        ROUND(IFNULL(mny.YTD_YLD,0),2) unit_net_chng_pct_tyear
+        FROM
+        FND_GEN_INFO info
+        LEFT JOIN
+        YLCF_ANA_FND_MNY_RETRUN mny
+        ON info.INNER_CODE = mny.INNER_CODE
+        WHERE
+        info.FUND_CODE = #{fund_code}
+        AND
+        info.ISVALID = 1
+    </select>
+
+    <!--获取非货币和非理财型基金的不同阶段的同类排名-->
+    <select id="getKindRank" resultType="java.util.Map">
+        SELECT
+        DATE(calc.tradedate) enddate,
+        info.FUND_CODE fundcode,
+        (SELECT
+        IF(COUNT(cal.unit_net_chng_pct_1_week),COUNT(cal.unit_net_chng_pct_1_week) + 1,0)
+        FROM
+        ylcf_ana_fnd_nav_calc cal
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = cal.inner_code
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        cal.unit_net_chng_pct_1_week IS NOT NULL
+        AND
+        cal.unit_net_chng_pct_1_week != ''
+        AND
+        cal.unit_net_chng_pct_1_week > calc.unit_net_chng_pct_1_week
+        ) sum_1_week,
+        ROUND(IFNULL(calc.unit_net_chng_pct_1_week,0),2) unit_net_chng_pct_1_week,
+        (SELECT
+        IF(COUNT(cal.unit_net_chng_pct_1_mon),COUNT(cal.unit_net_chng_pct_1_mon) + 1,0)
+        FROM
+        ylcf_ana_fnd_nav_calc cal
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = cal.inner_code
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        cal.unit_net_chng_pct_1_mon IS NOT NULL
+        AND
+        cal.unit_net_chng_pct_1_mon != ''
+        AND
+        cal.unit_net_chng_pct_1_mon > calc.unit_net_chng_pct_1_mon
+        ) sum_1_mon,
+        ROUND(IFNULL(calc.unit_net_chng_pct_1_mon,0),2) unit_net_chng_pct_1_mon,
+        (SELECT
+        IF(COUNT(cal.unit_net_chng_pct_3_mon),COUNT(cal.unit_net_chng_pct_3_mon) + 1,0)
+        FROM
+        ylcf_ana_fnd_nav_calc cal
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = cal.inner_code
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        cal.unit_net_chng_pct_3_mon IS NOT NULL
+        AND
+        cal.unit_net_chng_pct_3_mon != ''
+        AND
+        cal.unit_net_chng_pct_3_mon > calc.unit_net_chng_pct_3_mon
+        ) sum_3_mon,
+        ROUND(IFNULL(calc.unit_net_chng_pct_3_mon,0),2) unit_net_chng_pct_3_mon,
+        (SELECT
+        IF(COUNT(cal.unit_net_chng_pct_6_mon),COUNT(cal.unit_net_chng_pct_6_mon) + 1,0)
+        FROM
+        ylcf_ana_fnd_nav_calc cal
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = cal.inner_code
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        cal.unit_net_chng_pct_6_mon IS NOT NULL
+        AND
+        cal.unit_net_chng_pct_6_mon != ''
+        AND
+        cal.unit_net_chng_pct_6_mon > calc.unit_net_chng_pct_6_mon
+        ) sum_6_mon,
+        ROUND(IFNULL(calc.unit_net_chng_pct_6_mon,0),2) unit_net_chng_pct_6_mon,
+        (SELECT
+        IF(COUNT(cal.unit_net_chng_pct_1_year),COUNT(cal.unit_net_chng_pct_1_year) + 1,0)
+        FROM
+        ylcf_ana_fnd_nav_calc cal
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = cal.inner_code
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        cal.unit_net_chng_pct_1_year IS NOT NULL
+        AND
+        cal.unit_net_chng_pct_1_year != ''
+        AND
+        cal.unit_net_chng_pct_1_year> calc.unit_net_chng_pct_1_year
+        ) sum_1_year,
+        ROUND(IFNULL(calc.unit_net_chng_pct_1_year,0),2) unit_net_chng_pct_1_year,
+        (SELECT
+        IF(COUNT(cal.unit_net_chng_pct_2_year),COUNT(cal.unit_net_chng_pct_2_year) + 1,0)
+        FROM
+        ylcf_ana_fnd_nav_calc cal
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = cal.inner_code
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        cal.unit_net_chng_pct_2_year IS NOT NULL
+        AND
+        cal.unit_net_chng_pct_2_year != ''
+        AND
+        cal.unit_net_chng_pct_2_year > calc.unit_net_chng_pct_2_year
+        ) sum_2_year,
+        ROUND(IFNULL(calc.unit_net_chng_pct_2_year,0),2) unit_net_chng_pct_2_year,
+        (SELECT
+        IF(COUNT(cal.unit_net_chng_pct_3_year),COUNT(cal.unit_net_chng_pct_3_year) + 1,0)
+        FROM
+        ylcf_ana_fnd_nav_calc cal
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = cal.inner_code
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        cal.unit_net_chng_pct_3_year IS NOT NULL
+        AND
+        cal.unit_net_chng_pct_3_year != ''
+        AND
+        cal.unit_net_chng_pct_3_year > calc.unit_net_chng_pct_3_year
+        ) sum_3_year,
+        ROUND(IFNULL(calc.unit_net_chng_pct_3_year,0),2) unit_net_chng_pct_3_year,
+        (SELECT
+        IF(COUNT(cal.unit_net_chng_pct_tyear),COUNT(cal.unit_net_chng_pct_tyear) + 1,0)
+        FROM
+        ylcf_ana_fnd_nav_calc cal
+        INNER JOIN
+        FND_GEN_INFO inf
+        ON inf.INNER_CODE = cal.inner_code
+        WHERE
+        inf.FUND_TYPE = info.FUND_TYPE
+        AND
+        cal.unit_net_chng_pct_tyear IS NOT NULL
+        AND
+        cal.unit_net_chng_pct_tyear != ''
+        AND
+        cal.unit_net_chng_pct_tyear > calc.unit_net_chng_pct_tyear
+        ) sum_tyear,
+        ROUND(IFNULL(calc.unit_net_chng_pct_tyear,0),2) unit_net_chng_pct_tyear
+        FROM
+        FND_GEN_INFO info
+        LEFT JOIN
+        ylcf_ana_fnd_nav_calc calc
+        ON info.INNER_CODE = calc.inner_code
+        WHERE
+        info.FUND_CODE = #{fund_code}
+        AND
+        info.ISVALID = 1
+    </select>
+
+    <!--获取基金近3月单位净值涨跌幅的近一年历史排名-->
+    <select id="getKindRankHistoryOf3mon" resultType="java.util.Map">
+        SELECT
+        rank.`rownum`,
+        DATE(rank.`enddate`) enddate,
+        rank.`fund_code`,
+        rank.`fund_type`
+        FROM
+        `YLCF_FUND_KIND_RANK` rank
+        WHERE
+        rank.`fund_code` = #{fund_code}
+        AND
+        rank.`rownum` != 1
+        <if test="fund_type != null and fund_type != '' ">
+            AND
+            rank.`fund_type` = #{fund_type}
+        </if>
+        <if test="month != null and month != '' ">
+            AND
+            rank.`enddate` >= SUBDATE(CURDATE(),INTERVAL #{month} MONTH)
+        </if>
+        ORDER BY rank.`enddate`
+    </select>
+
+    <!--获取货基的收益结转信息-->
+    <select id="getCarryTime"  resultType="java.util.Map">
+        SELECT
+        info.INNER_CODE inner_code,
+        info.FUND_CODE fund_code,
+        info.INCOME_CONV_SHARE_CLS income_conv_share_cls,
+        info.INCOME_CONV_SHARE income_conv_share,
+        iss.MENSAL_CARRY_DATE mensal_carry_date
+        FROM
+        juling.FND_GEN_INFO info
+        LEFT JOIN
+        juling.FND_OEF_ISS iss
+        ON
+        iss.INNER_CODE = info.INNER_CODE
+        WHERE
+        info.INNER_CODE = #{inner_code}
+        AND info.ISVALID = 1
+    </select>
+
+    <!--获取基金的风险等级-->
+    <select id="getFundriskgradeInfo" resultType="java.util.Map">
+        SELECT
+        risk.`INNER_CODE` innner_code,
+        risk.`FUND_RISK_LEVEL` fund_risk_level
+        FROM
+        `FND_INVEST_RISK` risk
+        WHERE
+        risk.`ISVALID` = 1
+        AND
+        risk.`INNER_CODE` = #{inner_code}
+        LIMIT 1
+    </select>
+
+    <!--海通证券基金评级-->
+    <select id="getHtsecRate" resultType="java.util.Map">
+        SELECT
+        rate.`INNER_CODE` inner_code,
+        DATE(rate.`ENDDATE`) enddate,
+        rate.`RATING` star
+        FROM
+        `FND_HTSEC_RATE` rate
+        WHERE
+        rate.INNER_CODE = #{inner_code}
+        AND
+        rate.`ISVALID` = 1
+        AND
+        rate.`RATING` IS NOT NULL
+        AND
+        rate.`RATING` != ''
+        ORDER BY
+        rate.`ENDDATE` DESC
+        limit 1
+    </select>
+
+    <!--获取基金评级-->
+    <select id="getFundRateList" resultType="java.util.Map">
+     SELECT
+	aa.enddate,
+	IFNULL(shRate.`OVERALL_RATING` ,0) shStar,
+    IFNULL(htRate.`RATING` ,0) htStar,
+    IFNULL(zsRate.`RATING` ,0) zsStar
+	FROM (SELECT DISTINCT(a.enddate) enddate FROM (SELECT
+        DATE(shRate.`ENDDATE`) enddate
+        FROM
+        FND_SHSEC_RATE shRate
+        WHERE
+        shRate.`ISVALID` = 1
+        AND
+        shRate.`PERIOD` = 3
+        AND
+        shRate.`INNER_CODE` = #{inner_code}
+        AND
+        shRate.`OVERALL_RATING` IS NOT NULL
+        AND
+        shRate.`OVERALL_RATING` != ''
+        UNION ALL
+        SELECT
+        DATE(htRate.`ENDDATE`) enddate
+        FROM
+        `FND_HTSEC_RATE` htRate
+        WHERE
+        htRate.`ISVALID` = 1
+        AND
+        htRate.`INNER_CODE` = #{inner_code}
+        AND
+        DATE(htRate.`ENDDATE`) &lt; DATE(NOW())
+        AND
+        htRate.`RATING` IS NOT  NULL
+        AND
+        htRate.`RATING` != ''
+        UNION ALL
+        SELECT
+        DATE(zsRate.`ENDDATE`) enddate
+        FROM
+        `FND_ZSSEC_RATE` zsRate
+        WHERE
+        zsRate.`ISVALID` = 1
+        AND
+        zsRate.`INNER_CODE` = #{inner_code}
+        AND
+        zsRate.`RATING` IS NOT NULL
+        AND
+        zsRate.`RATING` != ''
+        ) a )aa
+        LEFT JOIN
+        FND_SHSEC_RATE shRate ON aa.enddate = DATE(shRate.`ENDDATE`)
+        AND
+        shRate.`ISVALID` = 1
+        AND
+        shRate.`PERIOD` = 3
+        AND
+        shRate.`INNER_CODE` = #{inner_code}
+        LEFT JOIN
+        `FND_HTSEC_RATE` htRate
+        ON aa.enddate = DATE(htRate.`ENDDATE`)
+        AND
+        htRate.`INNER_CODE` = #{inner_code}
+        AND
+        htRate.`ISVALID` = 1
+        LEFT JOIN
+        `FND_ZSSEC_RATE` zsRate
+	    ON aa.enddate = DATE(zsRate.`ENDDATE`)
+	    AND
+	    zsRate.`INNER_CODE` = #{inner_code}
+	    AND
+        zsRate.`ISVALID` = 1
+        ORDER BY aa.enddate DESC
+        limit #{start},#{pageSize};
+    </select>
+    <!--获取基金规模变动-->
+    <select id="getFundScaleList" resultType="java.util.Map">
+        SELECT
+        *
+        FROM
+        (SELECT
+        a.info_source,
+		LEFT (a.info_source_mark,3) info_source_mark,
+		YEAR(a.end_date) end_date,
+		a.end_date sdate,
+		ROUND(ifnull(a.end_shares, 0)*ifnull(val.accum_net, 1)/10000,2) end_shares
+		FROM FND_UNIT_CHNG a
+		LEFT JOIN
+		ANA_FND_NAV_CALC val
+		ON
+		a.INNER_CODE = val.INNER_CODE
+		AND
+		DATE(a.`END_DATE`)= DATE(val.`TRADEDATE`)
+		where
+		a.inner_code = #{inner_code}
+		AND
+		a.info_source in (1,2,4,5)
+		AND a.isvalid = 1
+		ORDER BY a.end_date DESC
+		limit 5) AS s
+		ORDER  BY s.sdate
+    </select>
+
+    <!-- 基金行业资产配置 -->
+    <select id="getFundInduList" resultType="cn.yilucaifu.domain.fundinfo.FundIndu">
+        SELECT
+        b.fundsname,Date(a.enddate) enddate,a.indu_sname,
+        ROUND(ifnull(a.SECT_VAL_PROP, 0),2) sect_val,
+        a.indu_inner_code,a.fund_id
+        FROM FND_INDU_SUM_CONF a
+        INNER JOIN FND_GEN_INFO b
+        ON a.fund_id = b.fund_id
+        WHERE a.source IN (1,2,4,5)
+        AND b.inner_code = #{inner_code}
+        AND a.enddate
+        = (SELECT MAX(enddate)
+        FROM FND_INDU_SUM_CONF WHERE source IN
+        (1,2,4,5) AND fund_id =
+        a.fund_id)
+        ORDER BY a.sect_val DESC limit 10
+    </select>
+
+    <!--基金定投的起购金额-->
+    <select id="getFundAutoInvestMinVal" resultType="java.util.Map">
+        SELECT
+        auto.`INNER_CODE` inner_code,
+        auto.`MIN_VAL` min_val
+        FROM
+        juling.FND_AUTOMATIC_INVEST auto
+        WHERE
+        auto.`INNER_CODE` = #{inner_code}
+        AND
+        auto.`ISVALID` = 1
+        AND
+        auto.`MIN_VAL` IS NOT NULL
+        AND
+        auto.`MIN_VAL` != ''
+        ORDER BY
+        auto.`ENDDATE` DESC
+        LIMIT 1
+    </select>
+
+    <!-- 基金费率 -->
+    <select id="getFundChagRateInfo" resultType="java.util.Map">
+        SELECT
+		DISTINCT * FROM (SELECT
+		ss.*
+		,CASE
+		WHEN
+		ss.FUND_RATE=0 THEN 0
+		WHEN
+		chag_rate_up_lim IS NULL
+		THEN NULL
+		WHEN chag_rate_up_lim IS NOT NULL
+		THEN
+		ROUND(chag_rate_up_lim*ifnull(ss.FUND_RATE/10,1),2) END AS
+		cur_fund_rate FROM (SELECT
+		a.inner_code,
+		DATE(executedate) executedate,
+		DATE(enddate) enddate,
+		CHNG_MAX_TERM_MARK AS max_term_name,
+		CHAG_RATE_UNIT_MARK AS rate_unit_name,
+		LEFT(chag_rate_up_lim,4) chag_rate_up_lim,FUND_RATE AS fund_rate,
+		PERT_VAL_UNIT_MARK AS val_unit_name,pert_val_low_lim,
+		(SELECT
+		ref_name FROM GEN_REF WHERE
+		isvalid = 1 AND
+		cls_code = 3029
+		AND
+		ref_code = VAL_COND_RELA ) AS
+		cond_rela_name,
+		pert_val_up_lim ,
+		hld_term_unit_mark,
+		hld_term_low_lim,
+		(
+		SELECT ref_name
+		FROM GEN_REF
+		WHERE isvalid = 1 AND cls_code = 3029
+		AND
+		ref_code =
+		TERM_COND_RELA )
+		AS term_rela_name,
+		hld_term_up_lim,a.chng_min_term_mark
+		FROM
+		FND_CHAG_RATE a
+		LEFT JOIN
+		FND_GEN_INFO gen ON
+		a.INNER_CODE=gen.INNER_CODE
+		WHERE
+		gen.FUND_CODE=#{fund_code} AND
+		((a.enddate IS NULL
+		AND CHNG_MAX_TERM
+		IN(1,2, 5, 6) ) OR CHNG_MAX_TERM = 4) AND a.isvalid = 1
+		AND gen.isvalid
+		= 1
+		ORDER BY CHNG_MAX_TERM, CHNG_MIN_TERM, EXECUTEDATE
+		DESC,pert_val_low_lim)
+		ss) dd
+    </select>
+
+    <!--货基和理财型基金的万份收益变化-->
+    <select id="getUnitListByFundCode" parameterType="String"
+            resultType="cn.yilucaifu.domain.fundinfo.FundUnitNet">
+        SELECT
+        ROUND(TENTHOU_UNIT_INCM,4)  AS unit_net,
+        DATE(enddate) AS tradedate,
+        UNIX_TIMESTAMP(enddate) AS transtimestamp
+        FROM
+        FND_MNY_INCM incm
+        INNER JOIN
+        FND_GEN_INFO info ON
+        incm.inner_code = info.inner_code
+        WHERE
+        info.fund_code =#{fund_code}
+        <if test="month != null and month != '' ">
+        AND
+        enddate >=
+        SUBDATE(now(),INTERVAL
+        #{month} MONTH)
+        </if>
+        ORDER BY enddate
+    </select>
+
+    <!--货基和理财型基金的七日年化-->
+    <select id="getAccumListByFundCode" parameterType="String"
+            resultType="cn.yilucaifu.domain.fundinfo.FundUnitNet">
+        SELECT
+        ROUND(year_yld,2) AS unit_net,
+        DATE(enddate) AS tradedate,
+        UNIX_TIMESTAMP(enddate) AS transtimestamp
+        FROM
+        FND_MNY_INCM incm
+        INNER JOIN
+        FND_GEN_INFO info ON
+        incm.inner_code = info.inner_code
+        WHERE
+        info.fund_code =#{fund_code}
+        AND
+        info.ISVALID = 1
+        <if test="month != null and month != '' ">
+        AND
+        enddate >=
+        SUBDATE(now(),INTERVAL
+        #{month} MONTH)
+        </if>
+        ORDER BY enddate
+    </select>
+
+    <!--权益类基金的净值变化-->
+    <select id="getUnitnetListByFundCode" parameterType="String"
+            resultType="cn.yilucaifu.domain.fundinfo.FundUnitNet">
+        SELECT
+        ROUND(nav.unit_net,4) AS unit_net,
+        DATE(nav.tradedate) AS tradedate,
+        UNIX_TIMESTAMP(nav.tradedate) AS transtimestamp
+        FROM
+        ANA_FND_NAV_CALC nav
+        INNER JOIN
+        FND_GEN_INFO info ON
+        nav.inner_code = info.inner_code
+        WHERE
+        info.fund_code =#{fund_code}
+        AND info.ISVALID = 1
+        <if test="month != null and month != ''">
+        AND
+        nav.tradedate >= SUBDATE(NOW(),INTERVAL #{month} MONTH)
+        </if>
+        ORDER BY tradedate
+    </select>
+
+    <!--权益类基金收益率变化-->
+    <select id="getFundNavCalcList" parameterType="String" resultType="java.util.Map">
+        SELECT
+        a.fundsname,
+        ROUND(100*(IFNULL(a.FAC_UNIT_NET,0)-IFNULL(b.FAC_UNIT_NET,0))/IFNULL(b.FAC_UNIT_NET,1) ,2)unit_net_chng_pct,
+        DATE(a.tradedate) tradedate,
+        ROUND(100*(IFNULL(c.tclose,0)-IFNULL(d.tclose,0))/IFNULL(d.tclose,1),2) chng_pct
+        FROM
+        ANA_FND_NAV_CALC a
+        INNER JOIN (SELECT
+        tradedate,
+        FAC_UNIT_NET,
+        accum_net
+        FROM ANA_FND_NAV_CALC
+        WHERE
+        inner_code = #{inner_code}
+        <if test="month != null and month != '' ">
+        AND tradedate >=
+        SUBDATE(curdate(),INTERVAL #{month} MONTH)
+        </if>
+        AND ISVALID = 1
+        ORDER BY tradedate limit 1) b
+        INNER JOIN ANA_INDX_EXPR_IDX c
+        ON c.trd_date = a.tradedate
+        INNER JOIN
+        ANA_INDX_EXPR_IDX d
+        ON c.inner_code = d.inner_code
+        AND d.trd_date = b.tradedate
+        WHERE
+        c.INDX_CODE = '000300'
+        AND a.inner_code = #{inner_code}
+        AND a.tradedate>= b.tradedate
+        AND a.ISVALID = 1
+        ORDER BY a.tradedate;
+    </select>
+
+    <!--非货基同类基金排名走势，指标：近3月涨幅,数据导入与维护-->
+    <select id="getRankHistoryData" parameterType="String" resultType="cn.yilucaifu.domain.fundinfo.FundRankInfo">
+        SELECT
+        (@i := CASE WHEN @TRADEDATE = TRADEDATE then @i + 1 else 1 END) rownum,
+        DATE(@TRADEDATE:= TRADEDATE) tradedate,
+        calc.INNER_CODE inner_code, info.FUND_CODE fund_code,DATE(calc.TRADEDATE) enddate,
+        calc.UNIT_NET_CHNG_PCT_3_MON unit_net_chng_pct_3_mon,info.FUND_TYPE fund_type
+        FROM
+        FND_GEN_INFO info
+        LEFT JOIN
+        ANA_FND_NAV_CALC calc
+        ON calc.INNER_CODE = info.INNER_CODE,
+        (SELECT @i := 0,@TRADEDATE:='')as a
+        WHERE
+        info.FUND_TYPE = #{fund_type}
+        AND
+        DATE(calc.TRADEDATE) &gt;= DATE(#{start_date})
+        AND
+        DATE(calc.TRADEDATE) &lt;=  DATE(#{end_date})
+        AND
+        DAYOFWEEK(calc.TRADEDATE)= 2
+        AND
+        calc.UNIT_NET_CHNG_PCT_3_MON IS NOT NULL
+        AND
+        calc.UNIT_NET_CHNG_PCT_3_MON != ''
+        ORDER BY
+        calc.TRADEDATE,calc.UNIT_NET_CHNG_PCT_3_MON DESC
+    </select>
+
+    <!--货基同类基金排名走势，指标：近3月涨幅,数据导入与维护-->
+    <select id="getRankHistoryDataOfCoin" parameterType="String" resultType="cn.yilucaifu.domain.fundinfo.FundRankInfo">
+        SELECT
+        (@i := CASE WHEN @ENDDATE = ENDDATE then @i + 1 else 1 END) rownum,
+        DATE(@ENDDATE:= ENDDATE) tradedate,
+        mny.INNER_CODE inner_code, info.FUND_CODE fund_code,DATE(mny.ENDDATE) enddate,
+        mny.QUA_YLD unit_net_chng_pct_3_mon,info.FUND_TYPE fund_type
+        FROM
+        FND_GEN_INFO info
+        LEFT JOIN
+        ANA_FND_MNY_RETRUN mny
+        ON mny.INNER_CODE = info.INNER_CODE,
+        (SELECT @i := 0,@TRADEDATE:='')as a
+        WHERE
+        info.FUND_TYPE = #{fund_type}
+        AND
+        DATE(mny.ENDDATE) &gt;= DATE(#{start_date})
+        AND
+        DATE(mny.ENDDATE) &lt;=  DATE(#{end_date})
+        AND
+        DAYOFWEEK(mny.ENDDATE)= 2
+        AND
+        mny.QUA_YLD IS NOT NULL
+        AND
+        mny.QUA_YLD != ''
+        ORDER BY
+        mny.ENDDATE,mny.QUA_YLD DESC
+    </select>
+
+    <!--增加基金同类排行数据-->
+    <insert id="addFundRankInfo" parameterType="cn.yilucaifu.domain.fundinfo.FundRankInfo">
+        INSERT INTO
+        juling.`YLCF_FUND_KIND_RANK`(rownum,tradedate,inner_code,fund_code,
+        enddate,unit_net_chng_pct_3_mon,fund_type)
+        SELECT #{rownum},#{tradedate},#{inner_code},#{fund_code},
+        #{enddate},#{unit_net_chng_pct_3_mon},#{fund_type}
+        FROM dual
+        WHERE NOT EXISTS(
+              SELECT *
+              FROM juling.`YLCF_FUND_KIND_RANK`
+              WHERE
+              fund_code = #{fund_code}
+              AND
+              enddate = #{enddate}
+        );
+    </insert>
+
+    <!--同类基金推荐-->
+    <select id="getKindFundRecommendList" resultType="java.util.Map">
+        SELECT
+        info.fund_rate,
+        buy.chag_rate_up_lim,
+        CASE
+        WHEN
+        info.fund_rate = 0 THEN 0
+        WHEN
+        chag_rate_up_lim IS NULL THEN 0
+        WHEN
+        chag_rate_up_lim IS NOT NULL  THEN ROUND(chag_rate_up_lim*IFNULL(info.fund_rate/10,1),4)
+        END AS cur_fund_rate,
+        info.fundsname,
+        info.fundname,
+        info.fund_code,
+        info.fund_type,
+        CASE WHEN
+        info.fund_type
+        =
+        1 THEN '封闭式基金'
+        WHEN info.fund_type = 2 THEN '股票型'
+        WHEN
+        info.fund_type =
+        3 THEN '混合型'
+        WHEN info.fund_type = 4 THEN 'ETF'
+        WHEN
+        info.fund_type = 5
+        THEN '债券型'
+        WHEN info.fund_type = 6 THEN '货币型'
+        WHEN
+        info.fund_type = 7
+        THEN 'QDII'
+        WHEN info.fund_type = 8 THEN '其他'
+        WHEN
+        info.fund_type = 9
+        THEN '指数型'
+        WHEN info.fund_type = 10 THEN '保本基金'
+        WHEN
+        info.fund_type = 11
+        THEN '理财基金'
+        END AS invst_type_mark,
+        ROUND(IF(calc.unit_net_chng_pct_3_mon IS
+        NULL AND mny.qua_yld IS NULL, NULL,
+        IFNULL(calc.unit_net_chng_pct_3_mon,0)+IFNULL(mny.qua_yld,0)),2)
+        unit_net_chng_pct_3_mon,
+        round(buy.quota,2) quota,
+        buy.quota_unit_mark,
+        CASE
+        WHEN
+        buy.quota_unit_mark IS NULL THEN '元'
+        WHEN
+        buy.quota_unit_mark = '份' THEN '元'
+        WHEN buy.quota_unit_mark IS NOT NULL THEN buy.quota_unit_mark
+        END AS quota_unit_mark,
+        rank.rownum
+        FROM
+        FND_GEN_INFO info
+        LEFT JOIN
+        ylcf_ana_fnd_nav_calc calc ON info.inner_code =calc.inner_code
+        LEFT JOIN
+        YLCF_FUND_BUY_INFO buy ON info.inner_code =buy.inner_code
+        LEFT JOIN
+        YLCF_ANA_FND_MNY_RETRUN mny ON info.inner_code = mny.inner_code
+        LEFT JOIN
+        `YLCF_FUND_KIND_RANK` rank ON rank.fund_type = info.fund_type AND rank.fund_code = info.fund_code
+        WHERE
+        rank.enddate = (SELECT r.enddate FROM YLCF_FUND_KIND_RANK r WHERE r.fund_code = #{fund_code} AND r.fund_type = #{fund_type}
+        ORDER BY  r.enddate DESC LIMIT 1)
+        AND
+        info.fund_code != #{fund_code}
+        AND info.fund_type = #{fund_type}
+        AND info.status = 1
+        AND info.ISVALID = 1
+        AND buy.quota  &lt;=  10000
+        LIMIT 5;
+    </select>
+
+    <!--获取基金的净值或者七日年化信息-->
+    <select id="getFundNetInfo" resultType="cn.yilucaifu.domain.fundinfo.FundPosition">
+        SELECT
+        info.inner_code,
+        info.fund_code,
+        info.fund_type,
+        info.FUNDSNAME fundname,
+        info.STATUS status,
+        info.IS_AUTO_INVEST is_auto_invest,
+        info.FUND_STATUS fund_status,
+        (IFNULL(val.unit_net, 0)+IFNULL(incm.tenthou_unit_incm, 0)) unit_net,
+        (IFNULL(val.accum_net,0)+IFNULL(incm.year_yld,0)) accum_net,
+        CASE WHEN (info.fund_type = 6 OR info.fund_type = 11)
+        THEN DATE(incm.enddate)
+        ELSE DATE(val.enddate)
+        END enddate
+        FROM FND_GEN_INFO info
+        LEFT JOIN
+        YLCF_FND_NET_VAL val ON info.inner_code =val.inner_code
+        LEFT JOIN
+        ylcf_ana_fnd_nav_calc calc ON info.inner_code =calc.inner_code
+        LEFT JOIN
+		YLCF_FND_MNY_INCM incm on
+		info.INNER_CODE = incm.INNER_CODE
+        WHERE
+        info.fund_code = #{fund_code}
+        AND info.ISVALID = 1
+        LIMIT 1
+    </select>
+
+    <!--获取持有基金的未支付收益（结转收益）-->
+    <select id="getCarryProfit" parameterType="java.util.Map" resultType="String">
+        SELECT
+        ROUND(ifnull(SUM(bal.`yestDprofit`),0),2) yestDprofitSum
+        FROM
+        pingan_third_bal_fund bal
+        WHERE
+        bal.`TRANSACTIONACCOUNTID` = #{transactionaccountid}
+        AND
+        bal.`FUNDCODE` =  #{fundcode}
+        AND
+        bal.`FILETIME` &lt;=  #{startDate}
+        AND
+        bal.`FILETIME` &lt;  #{endDate}
+        LIMIT 30;
+    </select>
+
+    <!--查找用户第一次购买指定基金的申请确认日期-->
+    <select id="getFirstBuyDate" resultType="String">
+        SELECT
+        h.`transactioncfmdate`
+        FROM
+        yilucaifu.pingan_account_funds_history h
+        WHERE
+        h.`transactionaccountid` = #{transactionaccountid}
+        AND
+        h.`fundcode` = #{fundcode}
+        AND
+        h.`applystname` = '确认成功'
+        AND
+        (h.`businessname` = '申购确认' OR h.`businessname` = '认购结果')
+        ORDER BY h.`createtime`
+        LIMIT 1;
+    </select>
+
+    <!--权益类基金的净值变化-->
+    <select id="getUnitnetListOfUser" parameterType="String"
+            resultType="java.util.Map">
+        SELECT
+        a.fundsname,
+        ROUND(100*(IFNULL(a.FAC_UNIT_NET,0)-IFNULL(b.FAC_UNIT_NET,0))/IFNULL(b.FAC_UNIT_NET,1) ,2)unit_net_chng_pct,
+        DATE(a.tradedate) tradedate,
+        ROUND(100*(IFNULL(c.tclose,0)-IFNULL(d.tclose,0))/IFNULL(d.tclose,1),2) chng_pct
+        FROM
+        ANA_FND_NAV_CALC a
+        INNER JOIN (SELECT
+        tradedate,
+        FAC_UNIT_NET,
+        accum_net
+        FROM ANA_FND_NAV_CALC
+        WHERE
+        inner_code = #{inner_code}
+        <if test="month != null and month != '' ">
+            AND tradedate >=
+            SUBDATE(curdate(),INTERVAL #{month} MONTH)
+        </if>
+        AND ISVALID = 1
+        ORDER BY tradedate limit 1) b
+        INNER JOIN ANA_INDX_EXPR_IDX c
+        ON c.trd_date = a.tradedate
+        INNER JOIN
+        ANA_INDX_EXPR_IDX d
+        ON c.inner_code = d.inner_code
+        AND d.trd_date = b.tradedate
+        WHERE
+        c.INDX_CODE = '000300'
+        AND a.inner_code = #{inner_code}
+        AND a.tradedate>= b.tradedate
+        AND a.ISVALID = 1
+        <if test="firstBuyDate != null and firstBuyDate != ''">
+            AND
+            DATE(a.tradedate) >= DATE(#{firstBuyDate})
+        </if>
+        ORDER BY a.tradedate;
+    </select>
+
+    <!--获取基金的主题信息-->
+    <select id="getFundSubject" resultType = "String">
+        SELECT
+        su.SUBNAME subname
+        FROM
+        fnd_subject_rel re
+        LEFT JOIN
+        fnd_subject su
+        ON
+        re.SUBID = su.SUBID
+        WHERE
+        re.FUND_CODE = #{fund_code}
+        AND
+        su.SUBSTATUS = 1
+        ORDER BY
+        re.SUBID limit 1;
+    </select>
+
+    <!--获取基金的日申购累计金额-->
+    <select id="getDayAccumMoney" resultType="java.util.Map">
+        SELECT
+        concat(round(VAL_LIMIT,0),'万元 ',ifnull(REMARK,"")) as val_limit,
+        round(VAL_LIMIT,0) val,
+        ifnull(REMARK,"") remark
+        FROM
+        FND_STATUS_CHNG
+        WHERE isvalid = 1
+        AND EVENT_TYPE = 1
+        AND CHNG_TYPE = '2'
+        AND INNER_CODE = #{inner_code}
+        ORDER BY CHANGE_DATE DESC limit 1;
+    </select>
+    <!--基金详情页-->
+
+    <!--企业理财首页基金推荐（代销可购买七日年化排序）-->
+    <select id="getCurrencyRecommendList" resultType="cn.yilucaifu.domain.fundinfo.FundDetail">
+        SELECT
+        info.FUND_CODE fund_code,
+        incm.YEAR_YLD accum_net
+        FROM
+        FND_GEN_INFO info
+        LEFT JOIN
+        YLCF_FND_MNY_INCM incm
+        ON
+        info.INNER_CODE = incm.INNER_CODE
+        WHERE
+        info.FUND_TYPE = 6
+        AND
+        info.`STATUS` = 1
+        AND
+        info.FUND_STATUS != 3
+        AND
+        info.ISVALID = 1
+        AND
+        info.FUND_CODE != '003075'
+        ORDER BY incm.YEAR_YLD DESC
+        LIMIT #{size};
+    </select>
+
+    <!--企业理财首页基金推荐（固定可购买七日年化排序）-->
+    <select id="getFixCurrencyRecommendList" resultType="cn.yilucaifu.domain.fundinfo.FundDetail">
+        SELECT
+        info.FUND_CODE fund_code,
+        incm.YEAR_YLD accum_net
+        FROM
+        FND_GEN_INFO info
+        LEFT JOIN
+        YLCF_FND_MNY_INCM incm
+        ON
+        info.INNER_CODE = incm.INNER_CODE
+        WHERE
+        info.FUND_CODE in
+        <foreach collection="array" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND
+        info.`STATUS` = 1
+        AND
+        info.FUND_STATUS != 3
+        AND
+        info.ISVALID = 1
+        ORDER BY incm.YEAR_YLD DESC
+        LIMIT #{size};
+    </select>
+
+    <!--基金搜索-->
+    <select id="getSearchFundList" resultType="cn.yilucaifu.domain.fundinfo.FundDetail">
+        SELECT
+		info.fundsname,info.inner_code,info.fund_code ,info.fund_id
+		from
+		FND_GEN_INFO info
+		where isvalid = 1 and STATUS = 1
+		AND FUND_STATUS = 1
+		and (fund_code like '${key}%'
+		or
+		fundsname like '%${key}%'
+		or fundsname_2 like '%${key}%'
+		or fundname	like '%${key}%'
+		or chi_abbr like '${key}%'
+		or chi_spell_2 like '${key}%')
+		limit 10
+    </select>
+    <!--获取某一类型七日年化最高的理财型基金-->
+    <select id="getMaxFinancialFund" resultType="cn.yilucaifu.domain.fundinfo.FundDetail">
+        SELECT
+        f.`fundcode` AS fund_code
+        FROM
+        yilucaifu.`pingan_financial_fund` f
+        LEFT JOIN juling.`FND_GEN_INFO` g
+        ON f.`fundcode` = g.`FUND_CODE`
+        LEFT JOIN juling.YLCF_FND_MNY_INCM incm
+        ON incm.`INNER_CODE` = g.`INNER_CODE`
+        WHERE g.`ISVALID` = 1
+        AND (
+        g.`FUND_STATUS` = 1
+        OR g.`FUND_STATUS` = 4
+        )
+        AND g.`STATUS` = 1
+        AND
+        f.`closetype` = #{closetype}
+        ORDER BY incm.`YEAR_YLD` DESC LIMIT 1
+    </select>
+</mapper>

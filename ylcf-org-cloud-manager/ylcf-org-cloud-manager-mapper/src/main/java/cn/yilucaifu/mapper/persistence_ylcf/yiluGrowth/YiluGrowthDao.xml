@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence_ylcf.yiluGrowth.YiluGrowthDao">
+	
+	<sql id="paramColumn">id,title,mediaFrom,briefIntro,article,createDate,typeId</sql>
+	
+	<select id="selectAllYiluGrowth" resultType="cn.yilucaifu.domain.yiluGrowth.YiluGrowth">
+		select g.id,g.title,g.mediaFrom,g.briefIntro,g.article,g.createDate,g.typeId,c.type,c.typeColor from yilu_growth g left join yilu_growth_color c on g.typeId = c.id
+	</select>
+	
+	<select id="selectYiluGrowthById" parameterType="java.lang.Integer" resultType="cn.yilucaifu.domain.yiluGrowth.YiluGrowth">
+		select <include refid="paramColumn"/> from yilu_growth where id = #{id}
+	</select>
+	
+	<select id="selectAllYiluGrowthByCondition" resultType="cn.yilucaifu.domain.yiluGrowth.YiluGrowth">
+		select <include refid="paramColumn"/> from yilu_growth where date(createDate) &gt;= #{start_time} and date(createDate) &lt;= #{end_time} 
+		<if test="title != null">and title like "%${title}%"</if>
+		<if test="mediaFrom != null">and mediaFrom like "%${mediaFrom}%"</if>
+		<if test="typeList != null and typeList.size()>0">
+			and type in 
+			<foreach collection="typeList" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	
+	<insert id="saveYiluGrowth" parameterType="cn.yilucaifu.domain.yiluGrowth.YiluGrowth">
+		insert into yilu_growth(title,mediaFrom,briefIntro,article,createDate,typeId) values(#{title},#{mediaFrom},#{briefIntro},#{article},#{createDate},#{typeId})
+	</insert>
+	
+	<update id="updateYiluGrowth" parameterType="cn.yilucaifu.domain.yiluGrowth.YiluGrowth">
+		update yilu_growth set title=#{title},
+		mediaFrom=#{mediaFrom},briefIntro=#{briefIntro},article=#{article},createDate=#{createDate},typeId=#{typeId} where id = #{id}
+	</update>
+	
+	<delete id="deleteYiluGrowthById" parameterType="java.lang.Integer">
+		delete from yilu_growth where id = #{id}
+	</delete>
+	
+	<select id="getAllGrowthList" resultType="cn.yilucaifu.domain.yiluGrowth.YiluGrowth">
+		select *,left(createDate, 4) as occuryear,c.typeColor from yilu_growth g 
+		left join yilu_growth_color c 
+		on g.typeId = c.id
+		order by createDate desc ,g.id desc
+	</select>
+	
+	<select id="getAllYearList" resultType="java.lang.String">
+		select left(createDate, 4)
+		from yilu_growth 
+		group by left(createDate, 4) 
+		order by left(createDate, 4) desc ;
+	</select>
+	
+</mapper>

@@ -1,0 +1,1496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yilucaifu.mapper.persistence.FundHistoryDao">
+  <sql id="roll_in">
+    SELECT
+    CONCAT('买入',ROUND(SUM(h.`confirmedamount`),2),'元') roll,
+    DATE(h.`transactioncfmdate`) enddate
+    FROM
+    pingan_account_funds_history h
+    WHERE
+    h.`applystname` = '确认成功'
+    AND
+    (businessname = '申购确认'
+    OR
+    businessname = '基金转换转入确认'
+    OR
+    businessname = '认购结果'
+    OR
+    businesscode = '139'
+    )
+    AND
+    h.`confirmedamount` IS NOT NULL
+    AND
+    h.`confirmedamount` != 0
+    AND
+    h.`transactiondate` IS NOT NULL
+    AND
+    h.`transactioncfmdate` IS NOT NULL
+    AND
+    h.`transactionaccountid` = #{transactionaccountid}
+    AND
+    h.`fundcode` = #{fundcode}
+    <if test="month != null and month != ''">
+      AND
+      h.`transactioncfmdate` >= SUBDATE(NOW(),INTERVAL #{month} MONTH)
+    </if>
+    GROUP BY
+    h.`transactioncfmdate`
+    ORDER BY
+    transactioncfmdate
+  </sql>
+
+  <sql id="roll_out">
+    SELECT
+    CONCAT('卖出',ROUND(SUM(h.`confirmedvol`),2),'份') roll,
+    DATE(h.`transactioncfmdate`) enddate
+    FROM
+    pingan_account_funds_history h
+    WHERE
+    h.`applystname` = '确认成功'
+    AND
+    (businessname = '赎回确认'
+    OR
+    businessname = '快速赎回确认'
+    OR
+    businessname = '快速过户确认'
+    OR
+    businessname = '基金转换转出确认'
+    OR
+    businessname = '强行赎回'
+    OR
+    businessname = '基金清盘'
+    )
+    AND
+    (h.codeoftargetfund IS NULL
+    OR
+    h.codeoftargetfund = '')
+    AND
+    h.`confirmedamount` IS NOT NULL
+    AND
+    h.`confirmedamount` != 0
+    AND
+    h.`transactiondate` IS NOT NULL
+    AND
+    h.`transactioncfmdate` IS NOT NULL
+    AND
+    h.`transactionaccountid` = #{transactionaccountid}
+    AND
+    h.`fundcode` = #{fundcode}
+    <if test="month != null and month != ''">
+      AND
+      h.`transactioncfmdate` >= SUBDATE(NOW(),INTERVAL #{month} MONTH)
+    </if>
+    GROUP BY
+    h.`transactioncfmdate`
+    ORDER BY
+    transactioncfmdate
+  </sql>
+
+  <sql id="vol_out">
+    SELECT
+    CONCAT('转出',ROUND(SUM(h.`confirmedvol`),2),'份') roll,
+    DATE(h.`transactioncfmdate`) enddate
+    FROM
+    pingan_account_funds_history h
+    WHERE
+    h.`applystname` = '确认成功'
+    AND
+    (businessname = '赎回确认'
+    OR
+    businessname = '快速赎回确认'
+    OR
+    businessname = '快速过户确认'
+    OR
+    businessname = '基金转换转出确认'
+    OR
+    businessname = '强行赎回'
+    OR
+    businessname = '基金清盘'
+    )
+    AND
+    h.codeoftargetfund IS NOT NULL
+    AND
+    h.codeoftargetfund != ''
+    AND
+    h.`confirmedamount` IS NOT NULL
+    AND
+    h.`confirmedamount` != 0
+    AND
+    h.`transactiondate` IS NOT NULL
+    AND
+    h.`transactioncfmdate` IS NOT NULL
+    AND
+    h.`transactionaccountid` = #{transactionaccountid}
+    AND
+    h.`fundcode` = #{fundcode}
+    <if test="month != null and month != ''">
+      AND
+      h.`transactioncfmdate` >= SUBDATE(NOW(),INTERVAL #{month} MONTH)
+    </if>
+    GROUP BY
+    h.`transactioncfmdate`
+    ORDER BY
+    transactioncfmdate
+  </sql>
+
+  <!--根据交易账号查找只有一笔未确认订单的公募基金-->
+  <select id="getFirstBuySuccessHistoryList" parameterType="java.util.Map" resultType="java.util.Map">
+    SELECT DISTINCT
+    h.fundcode
+    FROM
+    pingan_account_funds_history h
+    left join (SELECT DISTINCT
+    FUNDCODE
+    FROM
+    yilucaifu.pingan_third_bal_fund
+    WHERE
+    TRANSACTIONACCOUNTID = #{transactionaccountid}
+    AND
+    FILETIME > DATE_SUB(NOW(), INTERVAL 2 DAY)) x on h.fundcode=x.FUNDCODE
+    WHERE (
+    (
+    businessname = '申购申请' AND (applystname = '确认成功' OR applystname = '已发送扣款指令')
+    )
+    OR (
+    businessname = '认购申请' AND (applystname = '确认成功' OR applystname = '已发送扣款指令')
+    )
+    OR (
+    businessname = '申购确认' AND (applystname = '未确认' OR applystname = '待处理')
+    )
+    OR (
+    businessname = '认购确认' AND (applystname = '未确认' OR applystname = '待处理')
+    )
+    )
+    AND userid = #{userid}
+    AND transactiondate > DATE_SUB(NOW(), INTERVAL 5 DAY)
+    AND x.FUNDCODE is null
+  </select>
+
+
+  <!--保存基金交易信息-->
+  <insert id="saveFundHistory" parameterType="cn.yilucaifu.domain.fundinfo.FundHistory"
+          keyProperty="id" useGeneratedKeys="true">
+    INSERT INTO
+    yilucaifu_org.pingan_account_funds_history
+    (
+    appsheetserialno,
+    depositacct,
+    transactionaccountid,
+    fundcode,
+    fundname,
+    businesscode,
+    applicationamount,
+    applicationvol,
+    confirmedamount,
+    confirmedvol,
+    charge,
+    applystname,
+    transactiondate,
+    transactioncfmdate,
+    businessname,
+    codeoftargetfund,
+    nameoftargetfund,
+    targetdistributorcode,
+    targetdistributorname,
+    fundriskgradedesc,
+    summaryi,
+    specifyredeemflag,
+    acceptmethod,
+    tano,
+    taaccountid,
+    saveplanno,
+    nav,
+    createtime,
+    userid,
+    targettransactionaccountid
+    )
+    VALUES
+    (
+    #{appsheetserialno},
+    #{depositacct},
+    #{transactionaccountid},
+    #{fundcode},
+    #{fundname},
+    #{businesscode},
+    #{applicationamount},
+    #{applicationvol},
+    #{confirmedamount},
+    #{confirmedvol},
+    #{charge},
+    #{applystname},
+    #{transactiondate},
+    #{transactioncfmdate},
+    #{businessname},
+    #{codeoftargetfund},
+    #{nameoftargetfund},
+    #{targetdistributorcode},
+    #{targetdistributorname},
+    #{fundriskgradedesc},
+    #{summaryi},
+    #{specifyredeemflag},
+    #{acceptmethod},
+    #{tano},
+    #{taaccountid},
+    #{saveplanno},
+    #{nav},
+    NOW(),
+    #{userid},
+    #{targettransactionaccountid}
+    ) ON
+    DUPLICATE KEY UPDATE
+    depositacct=VALUES(depositacct),
+    transactionaccountid=VALUES(transactionaccountid),
+    fundcode=VALUES(fundcode),
+    applicationamount=VALUES(applicationamount),
+    applicationvol=VALUES(applicationvol),
+    confirmedamount=VALUES(confirmedamount),
+    confirmedvol=VALUES(confirmedvol),
+    charge=VALUES(charge),
+    applystname=VALUES(applystname),
+    transactiondate=VALUES(transactiondate),
+    transactioncfmdate=VALUES(transactioncfmdate),
+    businesscode=VALUES(businesscode),
+    businessname=VALUES(businessname),
+    codeoftargetfund=VALUES(codeoftargetfund),
+    nameoftargetfund=VALUES(nameoftargetfund),
+    targetdistributorcode=VALUES(targetdistributorcode),
+    targetdistributorname=VALUES(targetdistributorname),
+    fundriskgradedesc=VALUES(fundriskgradedesc),
+    summaryi=VALUES(summaryi),
+    specifyredeemflag=VALUES(specifyredeemflag),
+    acceptmethod=VALUES(acceptmethod),
+    tano=VALUES(tano),
+    taaccountid=VALUES(taaccountid),
+    saveplanno=VALUES(saveplanno),
+    nav=VALUES(nav),
+    userid=VALUES(userid),
+    targettransactionaccountid=VALUES(targettransactionaccountid);
+  </insert>
+
+  <!--根据基金代码获取清算天数-->
+  <select id="getFundCalDayByFundcode" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+    cal_day
+    FROM yilucaifu.fund_cal_day
+    WHERE fundcode = #{fundcode}
+    LIMIT 1
+  </select>
+
+  <select id="getFundHoldByUi" parameterType="java.util.Map" resultType="java.util.Map">
+    SELECT
+    bal.fundcode,
+    FUNDVOLBALANCE/100 currentshare,
+    AVAILABLEVOL/100 availablevol,
+    AVAILABLEVOL/100 vol,
+    FROZEN/100 enableVol,
+    ROUND(FUNDVOLBALANCE/100 *IFNULL(bal.NAV,1),2) minredemptionvol,
+    ROUND(FUNDVOLBALANCE/100 *IFNULL(bal.NAV,1),2) amount,
+    FROZEN/100 frozevol,
+    ROUND(IFNULL(bal.NAV,1.0000),4) nav,
+    DEFDIVIDENDMETHOD specifyredeemflag,
+    IFNULL(SYSDATE,DATE_FORMAT(DATE_SUB(NOW(),interval 1 day),'%Y%m%d')) lastDate,
+    IFNULL(SYSDATE,DATE_FORMAT(DATE_SUB(NOW(),interval 1 day),'%m-%d')) filetime,
+    ROUND(IFNULL(yestDprofit,0),2) yestDprofit,
+    CASE
+    WHEN ROUND(FUNDVOLBALANCE/100 *IFNULL(bal.NAV,1),0) != 0 THEN ROUND((IFNULL(yestDprofit,0)/(FUNDVOLBALANCE/100 *IFNULL(bal.NAV,1)))*100,2)
+    ELSE '0'
+    END yestdPct,
+    ROUND(IFNULL(profit,0),2) profit,
+    ROUND(IFNULL(profit,0),2) holdProfit,
+    CASE
+    WHEN (FUNDVOLBALANCE/100 *IFNULL(bal.NAV,1) - IFNULL(profit,0)) >0 THEN ROUND((IFNULL(profit,0)/(FUNDVOLBALANCE/100 *IFNULL(bal.NAV,1) - IFNULL(profit,0)))*100,2)
+    ELSE '0'
+    END holdPec,
+    ROUND(IFNULL(hold.principal,0),2) as principal,
+    isRedeem
+    FROM
+    yilucaifu.pingan_third_bal_fund bal
+    left join yilucaifu.fund_hold_middle hold on hold.TRANSACTIONACCOUNTID = bal.TRANSACTIONACCOUNTID  and bal.fundcode = hold.fundcode
+    WHERE filetime = #{filetime}
+    AND
+    (
+    bal.TRANSACTIONACCOUNTID = #{TRANSACTIONACCOUNTID}
+    <if test="xjbUI != null and xjbUI != ''">
+      OR
+      bal.TRANSACTIONACCOUNTID = #{xjbUI}
+    </if>
+    )
+    AND FUNDVOLBALANCE > 0
+  </select>
+  <!--根据订单号和用户id查找交易记录-->
+  <select id="findFundHistoryByAppsheetserialno" resultType="cn.yilucaifu.domain.fundinfo.FundHistory">
+    select
+    *
+    from pingan_account_funds_history
+    where
+    appsheetserialno=#{appsheetserialno}
+    and userid=#{userid};
+  </select>
+
+  <!--查询每天的交易，并定时查询确认信息，更新确认状态-->
+  <select id="findEverydayTrades" parameterType="string"
+          resultType="cn.yilucaifu.domain.fundinfo.FundHistory">
+    SELECT
+    transactionaccountid,
+    appsheetserialno,
+    userid,
+    createtime
+    FROM pingan_account_funds_history
+    WHERE businesscode IN ('020','024','022','039','036','098','029','120','138')
+    AND applystname = '确认成功'
+    AND transactiondate >= '20171201'
+    GROUP BY appsheetserialno
+    HAVING COUNT(appsheetserialno) &lt;2
+  </select>
+
+  <!--更新基金交易信息-->
+  <update id="updateFundHistory">
+    UPDATE pingan_account_funds_history
+    SET
+    appsheetserialno = #{appsheetserialno},
+    depositacct = #{depositacct},
+    transactionaccountid = #{transactionaccountid},
+    fundcode =#{fundcode},
+    fundname = #{fundname},
+    businesscode = #{businesscode},
+    applicationamount = #{applicationamount},
+    applicationvol=#{applicationvol},
+    confirmedamount =#{confirmedamount},
+    confirmedvol=#{confirmedvol},
+    charge = #{charge},
+    applystname
+    =#{applystname},
+    transactiondate = #{transactiondate},
+    transactioncfmdate=#{transactioncfmdate},
+    businessname
+    =#{businessname},
+    codeoftargetfund=#{codeoftargetfund},
+    nameoftargetfund=#{nameoftargetfund},
+    targetdistributorcode =
+    #{targetdistributorcode},
+    targetdistributorname =
+    #{targetdistributorname},
+    fundriskgradedesc =
+    #{fundriskgradedesc},
+    summaryi = #{summaryi},
+    specifyredeemflag =
+    #{specifyredeemflag},
+    tano =
+    #{tano},
+    taaccountid =
+    #{taaccountid},
+    saveplanno =#{saveplanno},
+    nav =
+    #{nav},
+    targettransactionaccountid = #{targettransactionaccountid}
+    WHERE
+    appsheetserialno =
+    #{appsheetserialno}
+  </update>
+
+  <!--查找未确认订单-->
+  <select id="findHistoryNoConfirm" parameterType="string" resultType="java.util.Map">
+    SELECT
+    appsheetserialno
+    FROM pingan_account_funds_history
+    where applystname = '未确认'
+  </select>
+
+  <!--更新 申购申请的交易状态-->
+  <update id="updateApplystname">
+    UPDATE pingan_account_funds_history
+    SET
+    applystname
+    =#{applystname}
+    WHERE
+    appsheetserialno =
+    #{appsheetserialno}
+  </update>
+
+  <!--基金申认购、普通赎回确认短信-->
+  <select id="getFundConfirmMsg" resultType="java.util.Map">
+    SELECT
+    transactionaccountid,
+    history.userid,
+    businesscode,
+    businessname,
+    applystname,
+    history.fundcode,
+    fundname,
+    history.applicationamount,
+    history.confirmedamount,
+    charge,
+    history.transactiondate,
+    transactioncfmdate,
+    history.createtime,
+    nav,
+    history.applicationvol,
+    history.confirmedvol
+    FROM
+    pingan_account_funds_history AS history
+    WHERE DATE_FORMAT(NOW(), '%Y%m%d') = transactioncfmdate
+    AND businessname IN ('认购确认', '申购确认','赎回确认')
+    AND applystname = '确认成功'
+  </select>
+
+  <!--查询近三天是否有赎回、分红-->
+  <select id="getTradeConfirms" resultType="cn.yilucaifu.domain.fundinfo.FundHistory">
+    SELECT
+    transactionaccountid,
+    fundcode,
+    appsheetserialno,
+    businessname
+    FROM pingan_account_funds_history
+    WHERE
+    (
+    businessname = '赎回确认'
+    OR
+    businessname = '快速赎回确认'
+    OR
+    businessname = '快速过户确认'
+    OR
+    (businessname = '红利发放' AND confirmedamount > 0)
+    OR
+    businessname = '基金转换转出确认'
+    OR
+    businessname = '强行赎回'
+    OR
+    businessname = '基金清盘'
+    )
+    AND applystname = '确认成功'
+    AND transactioncfmdate &gt;= DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 2 DAY),'%Y%m%d')
+    AND transactioncfmdate &lt;= DATE_FORMAT(NOW(),'%Y%m%d')
+  </select>
+
+  <!--查询当天机构发起的交易(时间节点：下午16:00),单卡模式-->
+  <select id="getTodayTradeList" resultType="cn.yilucaifu.domain.fundinfo.FundHistory">
+    SELECT
+    h.`transactiondate`,h.`transactionaccountid`,
+    SUM(h.`applicationamount`) applicationamount,
+    t.`depositacct`,t.`investorname`
+    FROM
+    `pingan_account_funds_history` h
+    LEFT JOIN
+    pingan_tranaccount t
+    ON
+    t.`user_id` = h.`userid`
+    WHERE
+    h.`businessname` IN('申购申请','申购确认')
+    AND
+    h.`createtime` &lt;= #{endTime}
+    AND
+    DATE(h.`createtime`) &gt;= DATE(#{endTime})
+    GROUP BY h.`transactionaccountid`
+    ORDER BY h.`createtime`
+  </select>
+
+  <!--****************************基金持仓信息*************************-->
+  <!--获取基金的在途金额-->
+  <select id="findTotalMoneyInTransit" resultType="java.lang.String">
+    SELECT
+    ROUND(IFNULL(SUM(applicationamount), 0), 2) as totalMoneyInTransit
+    FROM
+    pingan_account_funds_history
+    WHERE (
+    (
+    businessname = '申购申请'
+    AND (applystname = '确认成功' OR applystname = '已发送扣款指令')
+    )
+    OR (
+    businessname = '认购申请'
+    AND (applystname = '确认成功' OR applystname = '已发送扣款指令')
+    )
+    OR (
+    businessname = '申购确认' AND (applystname = '未确认' OR applystname = '待处理')
+    AND applicationvol IS  NULL  AND confirmedamount IS  NULL AND  charge IS  NULL
+    )
+    OR (
+    businessname = '认购确认' AND (applystname = '未确认' OR applystname = '待处理' OR applystname = '确认成功')
+    )
+    )
+    AND userid = #{userid}
+    <if test="fundcode != null and fundcode != ''">
+      AND fundcode = #{fundcode}
+    </if>
+    AND fundcode != '003075'
+    AND transactiondate > DATE_SUB(NOW(), INTERVAL 5 DAY)
+    ORDER BY transactiondate DESC
+  </select>
+
+  <!--根据交易账号、交易流水号、基金代码、业务种类、交易状态查找基金历史信息-->
+  <select id="getHistoryListOfParams" resultType="cn.yilucaifu.domain.fundinfo.FundHistory">
+    SELECT
+    appsheetserialno,transactionaccountid,businesscode,businessname,fundcode,userid,applystname,fundname
+    FROM
+    pingan_account_funds_history
+    WHERE 1 = 1
+    AND	 DATE_FORMAT(createtime, '%Y-%m-%d') = DATE_FORMAT(NOW(), '%Y-%m-%d')
+    <if test="appsheetserialno != null and appsheetserialno != ''">
+      AND  appsheetserialno = #{appsheetserialno}
+    </if>
+    <if test="transactionaccountid != null and transactionaccountid != ''">
+      AND  transactionaccountid = #{transactionaccountid}
+    </if>
+    <if test="fundcode != null and fundcode != ''">
+      AND  fundcode = #{fundcode}
+    </if>
+    <if test="businesscode != null and businesscode != ''">
+      AND  businesscode = #{businesscode}
+    </if>
+    <if test="applystname != null and applystname != ''">
+      AND  applystname = #{applystname}
+    </if>
+  </select>
+
+
+  <!--获取单个基金的持仓信息-->
+  <select id="getSingleFundHoldInfo" parameterType="java.util.Map"
+          resultType="cn.yilucaifu.domain.fundinfo.FundPosition">
+    SELECT
+    bal.fundcode fund_code,
+    FUNDVOLBALANCE/100 currentshare,
+    AVAILABLEVOL/100 availablevol,
+    ROUND(FUNDVOLBALANCE/100 * IFNULL(bal.NAV,1),2) property,
+    FROZEN/100 frozevol,
+    ROUND(IFNULL(yestDprofit,0),2) yestDprofit,
+    CASE
+    WHEN ROUND(FUNDVOLBALANCE/100 *IFNULL(bal.NAV,1),0) != 0
+    THEN ROUND((IFNULL(yestDprofit,0)/(FUNDVOLBALANCE/100 *IFNULL(bal.NAV,1)))*100,2)
+    ELSE '0'
+    END yestdPct,
+    ROUND(IFNULL(profit,0),2) holdProfit,
+    CASE
+    WHEN (FUNDVOLBALANCE/100 *IFNULL(bal.NAV,1) - IFNULL(profit,0)) >0
+    THEN ROUND((IFNULL(profit,0)/(FUNDVOLBALANCE/100 *IFNULL(bal.NAV,1) - IFNULL(profit,0)))*100,2)
+    ELSE '0'
+    END holdPec,
+    ROUND(IFNULL(hold.principal,0),2) as principal,
+    DATE_FORMAT(DATE(bal.filetime),'%Y-%m-%d') incomedate,
+    hold.nav net_cost
+    FROM
+    yilucaifu.pingan_third_bal_fund bal
+    LEFT JOIN
+    yilucaifu.fund_hold_middle hold
+    ON hold.TRANSACTIONACCOUNTID = bal.TRANSACTIONACCOUNTID
+    AND bal.fundcode = hold.fundcode
+    WHERE
+    bal.TRANSACTIONACCOUNTID = #{transactionaccountid}
+    AND
+    bal.filetime = #{filetime}
+    AND
+    bal.fundcode = #{fundcode}
+    AND FUNDVOLBALANCE > 0
+    limit 1;
+  </select>
+
+  <!--获取单个基金的资产记录（折线图）-->
+  <select id="getSingleFundPropertyHis" parameterType="java.util.Map" resultType="java.util.Map">
+    SELECT
+    ROUND(FUNDVOLBALANCE/100 * IFNULL(bal.NAV,1),2) property,
+    DATE(bal.`FILETIME`) filetime
+    FROM
+    yilucaifu.pingan_third_bal_fund bal
+    LEFT JOIN
+    yilucaifu.fund_hold_middle hold
+    ON hold.TRANSACTIONACCOUNTID = bal.TRANSACTIONACCOUNTID
+    AND bal.fundcode = hold.fundcode
+    WHERE
+    bal.TRANSACTIONACCOUNTID = #{transactionaccountid}
+    AND
+    bal.fundcode = #{fundcode}
+    <if test="month != null and month != ''">
+      AND
+      bal.`FILETIME` >= SUBDATE(NOW(),INTERVAL #{month} MONTH)
+    </if>
+    ORDER BY bal.`FILETIME`
+  </select>
+
+  <!--获取单个基金的收益变化（折线图）-->
+  <select id="getSingleFundYestDprofitHis" parameterType="java.util.Map" resultType="java.util.Map">
+    SELECT
+    ROUND(IFNULL(yestDprofit,0),2) yestDprofit,
+    DATE(bal.`FILETIME`) filetime
+    FROM
+    yilucaifu.pingan_third_bal_fund bal
+    LEFT JOIN
+    yilucaifu.fund_hold_middle hold
+    ON hold.TRANSACTIONACCOUNTID = bal.TRANSACTIONACCOUNTID
+    AND bal.fundcode = hold.fundcode
+    WHERE
+    bal.TRANSACTIONACCOUNTID = #{transactionaccountid}
+    AND
+    bal.fundcode = #{fundcode}
+    <if test="month != null and month != ''">
+      AND
+      bal.`FILETIME` >= SUBDATE(NOW(),INTERVAL #{month} MONTH)
+    </if>
+    ORDER BY bal.`FILETIME`
+  </select>
+
+  <!--获取单个基金的收益列表（非货基）-->
+  <select id="getSingleFundProfitList" parameterType="java.util.Map" resultType="java.util.Map">
+    SELECT
+    bal.fundcode fund_code,
+    DATE(bal.`FILETIME`) filetime,
+    bal.NAV nav,
+    bal.FUNDVOLBALANCE/100 currentshare,
+    0 unit_net,
+    0 accum_net,
+    ROUND(IFNULL(yestDprofit,0),2) yestDprofit
+    FROM
+    yilucaifu.pingan_third_bal_fund bal
+    LEFT JOIN
+    yilucaifu.fund_hold_middle hold
+    ON hold.TRANSACTIONACCOUNTID = bal.TRANSACTIONACCOUNTID
+    AND bal.fundcode = hold.fundcode
+    WHERE
+    bal.TRANSACTIONACCOUNTID = #{transactionaccountid}
+    AND
+    bal.fundcode = #{fundcode}
+    ORDER BY bal.`FILETIME` DESC
+    limit #{start},#{pageSize};
+  </select>
+
+  <!--获取单个基金的收益列表（货基）-->
+  <select id="getSingleCoinProfitList" parameterType="java.util.Map" resultType="java.util.Map">
+    SELECT
+    bal.fundcode fund_code,
+    DATE(bal.`FILETIME`) filetime,
+    bal.NAV nav,
+    bal.FUNDVOLBALANCE/100 currentshare,
+    IFNULL(incm.tenthou_unit_incm, 0) unit_net,
+    IFNULL(incm.year_yld,0) accum_net,
+    ROUND(IFNULL(yestDprofit,0),2) yestDprofit
+    FROM
+    yilucaifu.pingan_third_bal_fund bal
+    LEFT JOIN
+    yilucaifu.fund_hold_middle hold
+    ON
+    hold.TRANSACTIONACCOUNTID = bal.TRANSACTIONACCOUNTID
+    AND
+    bal.fundcode = hold.fundcode
+    LEFT JOIN
+    juling.FND_GEN_INFO info
+    ON
+    info.FUND_CODE=bal.`FUNDCODE`
+    LEFT JOIN
+    juling.FND_MNY_INCM incm
+    ON info.INNER_CODE =incm.INNER_CODE
+    AND
+    DATE(incm.`ENDDATE`) =  DATE(bal.`FILETIME`)
+    AND
+    incm.isvalid=1
+    WHERE
+    bal.TRANSACTIONACCOUNTID = #{transactionaccountid}
+    AND
+    bal.fundcode = #{fundcode}
+    AND
+    info.ISVALID = 1
+    ORDER BY bal.`FILETIME` DESC
+    LIMIT #{start},#{pageSize};
+  </select>
+
+  <!--获取单个基金的交易记录-->
+  <select id="getSingleFundTransactionHis"  parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT * FROM
+		(SELECT
+		CASE WHEN
+		(h.applystname = '确认成功' OR h.applystname = '已发送扣款指令' OR h.applystname = '待处理' OR h.applystname = '未确认')
+		THEN
+		'申购'
+		WHEN
+		h.businessname = '撤单申请'
+		THEN
+		'撤单'
+		ELSE
+		'申购（失败）'
+		END AS applystname,
+		CASE
+		WHEN
+		h.fundcode = '003075'
+		THEN
+		DATE(h.transactiondate)
+		ELSE
+		IFNULL(DATE(h.transactioncfmdate),IFNULL(DATE(h.transactiondate),DATE(h.createtime))) END AS transactiondate,
+		IFNULL(h.confirmedvol,0) confirmedvol,
+		IFNULL(h.nav,0) AS nav,
+		CASE WHEN
+		(h.charge IS NULL
+		OR
+		h.charge = '')
+		THEN
+		'0'
+		ELSE
+		IFNULL(h.charge,0)
+		END AS charge,
+		IFNULL(h.confirmedamount,h.applicationamount + 0) confirmedamount,
+		h.createtime
+		FROM
+		pingan_account_funds_history h
+		WHERE
+		h.userid = #{userid}
+		AND
+		h.fundcode = #{fundcode}
+		AND
+		(h.confirmedamount IS NOT NULL OR h.applicationamount IS NOT NULL)
+		AND
+		(h.businessname = '申购申请'
+		OR
+		h.businessname = '认购申请'
+		OR
+		h.businessname = '定时定额投资申请'
+		OR
+		h.businessname = '定时定额投资确认'
+		OR
+		h.businessname = '申购确认'
+		OR
+		h.businessname = '基金转换转入确认'
+		OR
+		h.businessname = '认购结果'
+		OR
+		h.businessname = '撤单申请'
+		OR
+		h.businesscode = '139')
+		UNION ALL
+		SELECT
+		CASE WHEN
+		(h.applystname = '确认成功' OR h.applystname = '待处理' OR h.applystname = '未确认')
+		THEN
+		'赎回'
+		WHEN
+		h.codeoftargetfund != '' AND h.codeoftargetfund IS NOT NULL
+		THEN
+		CONCAT('转至（',h.codeoftargetfund,'）')
+		WHEN
+		h.businessname = '撤单申请'
+		THEN
+		'撤单'
+		ELSE
+		'赎回（失败）'
+		END AS applystname,
+		CASE
+		WHEN
+		(h.businessname = '快速赎回确认' OR h.businessname = '快速赎回申请' OR h.businessname = '快速过户确认')
+		THEN
+		DATE(h.transactiondate)
+		ELSE
+		IFNULL(DATE(h.transactioncfmdate),IFNULL(DATE(h.transactiondate),DATE(h.createtime))) END AS transactiondate,
+		IFNULL(h.confirmedvol,IFNULL(h.applicationvol,0)) confirmedvol,
+		IFNULL(h.nav,0) AS nav,
+		CASE WHEN
+		(h.charge IS NULL
+		OR
+		h.charge = '')
+		THEN
+		'0'
+		ELSE
+		IFNULL(h.charge,0)
+		END AS charge,
+		CASE WHEN
+		h.businessname = '撤单申请'
+		THEN
+		IFNULL(h.applicationamount,h.applicationvol)
+		ELSE
+		IFNULL(h.confirmedamount,h.applicationamount)
+		END AS confirmedamount,
+		h.createtime
+		FROM
+		pingan_account_funds_history h
+		WHERE
+		h.userid = #{userid}
+		AND
+		fundcode = #{fundcode}
+		AND
+		(h.businessname = '赎回申请'
+		OR
+		h.businessname = '赎回确认'
+		OR
+		h.businessname = '快速赎回确认'
+		OR
+		h.businessname = '快速赎回申请'
+		OR
+		h.businessname = '快速过户确认'
+		OR
+		h.businessname = '基金转换转出确认'
+		OR
+		h.businessname = '强行赎回'
+		OR
+		h.businessname = '基金清盘'
+		OR
+		h.businessname = '撤单申请'
+		)) his
+		ORDER BY createtime DESC
+		LIMIT #{start},#{pageSize};
+  </select>
+
+  <!--增加用户基金买入卖出记录-->
+  <insert id="saveUserRollhis" parameterType="cn.yilucaifu.domain.fundinfo.FundRoll" keyProperty="id"  useGeneratedKeys="true">
+    INSERT INTO
+    fund_roll_history
+    (
+    enddate,
+    roll_in,
+    roll_out,
+    roll_vol,
+    transactionaccountid,
+    userid,
+    fundcode,
+    nav,
+    remark,
+    createtime
+    )
+    SELECT
+    #{enddate},
+    #{roll_in},
+    #{roll_out},
+    #{roll_vol},
+    #{transactionaccountid},
+    #{userid},
+    #{fundcode},
+    #{nav},
+    #{remark},
+    NOW()
+    FROM dual
+    WHERE NOT EXISTS(
+    SELECT
+    *
+    FROM
+    yilucaifu.fund_roll_history h
+    WHERE
+    h.`enddate` = #{enddate}
+    AND
+    h.`roll_in` = #{roll_in}
+    AND
+    h.`transactionaccountid` = #{transactionaccountid}
+    AND
+    h.`fundcode` = #{fundcode}
+    );
+  </insert>
+
+  <!--查询fund_roll_history的记录-->
+  <select id="findUniqueRoll" resultType="cn.yilucaifu.domain.fundinfo.FundRoll">
+    SELECT
+    *
+    FROM
+    yilucaifu.fund_roll_history h
+    WHERE
+    h.`enddate` = #{enddate}
+    AND
+    h.`roll_in` = #{roll_in}
+    AND
+    h.`transactionaccountid` = #{transactionaccountid}
+    AND
+    h.`fundcode` = #{fundcode}
+    LIMIT 1
+  </select>
+
+
+  <!--获取单个基金的资产列表 -->
+  <select id="getSingleFundPropertyList"  parameterType="java.util.Map" resultType="java.util.Map">
+    SELECT
+    bal.fundcode fundcode,
+    DATE(bal.`FILETIME`) filetime,
+    ROUND(FUNDVOLBALANCE/100 * IFNULL(bal.NAV,1),2) property,
+    ROUND(IFNULL(yestDprofit,0),2) yestDprofit,
+    IFNULL(ri.`roll_in`,0) roll_in,
+    IFNULL(ro.`roll_out`,0) roll_out
+    FROM
+    yilucaifu.pingan_third_bal_fund bal
+    LEFT JOIN
+    yilucaifu.fund_hold_middle hold
+    ON
+    hold.TRANSACTIONACCOUNTID = bal.TRANSACTIONACCOUNTID
+    AND
+    bal.fundcode = hold.fundcode
+    LEFT JOIN
+    yilucaifu.`fund_roll_history` ri
+    ON
+    ri.`transactionaccountid` = bal.`TRANSACTIONACCOUNTID`
+    AND
+    ri.`fundcode` = bal.`FUNDCODE`
+    AND
+    ri.`enddate` = bal.`FILETIME`
+    AND
+    ri.`roll_in` != '0'
+    LEFT JOIN
+    yilucaifu.`fund_roll_history` ro
+    ON
+    ro.`transactionaccountid` = bal.`TRANSACTIONACCOUNTID`
+    AND
+    ro.`fundcode` = bal.`FUNDCODE`
+    AND
+    ro.`enddate` = bal.`FILETIME`
+    AND
+    ro.`roll_out` != '0'
+    WHERE
+    bal.TRANSACTIONACCOUNTID = #{transactionaccountid}
+    AND
+    bal.fundcode = #{fundcode}
+    ORDER BY bal.`FILETIME` DESC
+    LIMIT #{start},#{pageSize};
+  </select>
+  <!--查询用户买入卖出记录（自2018-01-01开始）-->
+  <select id="getFundRollList" resultType="cn.yilucaifu.domain.fundinfo.FundRoll">
+    SELECT
+    *
+    ,
+    CASE WHEN
+    (his.businessname = '申购确认'
+    OR
+    his.businessname = '基金转换转入确认'
+    OR
+    his.businessname = '认购结果'
+    OR
+    his.businesscode = '139') THEN
+    ROUND(SUM(his.`confirmedamount`),2)
+    ELSE
+    '0'
+    END roll_in,
+    CASE WHEN
+    (his.businessname != '申购确认'
+    AND
+    his.businessname != '基金转换转入确认'
+    AND
+    his.businessname != '认购结果'
+    AND
+    his.businesscode != '139') THEN
+    ROUND(SUM(his.`confirmedamount`),2)
+    ELSE '0'
+    END roll_out,
+    CASE WHEN
+    (his.businessname != '申购确认'
+    AND
+    his.businessname != '基金转换转入确认'
+    AND
+    his.businessname != '认购结果'
+    AND
+    his.businesscode != '139') THEN
+    ROUND(SUM(his.`confirmedvol`),2)
+    ELSE '0'
+    END roll_vol
+    FROM
+    (SELECT
+    h.`userid`,
+    h.`transactionaccountid`,
+    h.`fundcode`,
+    h.`confirmedamount`,
+    h.`confirmedvol`,
+    h.`transactioncfmdate` enddate,
+    h.`nav`,
+    h.businessname,
+    h.applystname,
+    h.businesscode,
+    CASE WHEN
+    (businessname = '申购确认'
+    OR
+    businessname = '基金转换转入确认'
+    OR
+    businessname = '认购结果'
+    OR
+    businesscode = '139') THEN 1
+    ELSE
+    0
+    END remark
+    FROM
+    pingan_account_funds_history h
+    WHERE
+    h.`applystname` = '确认成功'
+    AND
+    (businessname = '申购确认'
+    OR
+    businessname = '基金转换转入确认'
+    OR
+    businessname = '认购结果'
+    OR
+    businesscode = '139'
+    OR
+    businessname = '赎回确认'
+    OR
+    businessname = '快速赎回确认'
+    OR
+    businessname = '快速过户确认'
+    OR
+    businessname = '基金转换转出确认'
+    OR
+    businessname = '强行赎回'
+    OR
+    businessname = '基金清盘'
+    )
+    AND
+    h.`confirmedamount` IS NOT NULL
+    AND
+    h.`confirmedamount` != 0
+    AND
+    h.`transactiondate` IS NOT NULL
+    AND
+    h.`transactioncfmdate` IS NOT NULL
+    AND
+    h.`transactionaccountid` = #{transactionaccountid}
+    AND
+    h.`transactioncfmdate` = #{transactioncfmdate}) his
+    GROUP BY his.fundcode,remark
+  </select>
+  <!--查询交易列表中的 交易账号-->
+  <select id="getAllBuyUi" resultType="java.lang.String">
+    SELECT
+    DISTINCT(h.`transactionaccountid`)
+    FROM
+    pingan_account_funds_history h
+    WHERE
+    h.`applystname` = '确认成功'
+    AND
+    (businessname = '申购确认'
+    OR
+    businessname = '基金转换转入确认'
+    OR
+    businessname = '认购结果'
+    OR
+    businesscode = '139'
+    OR
+    businessname = '赎回确认'
+    OR
+    businessname = '快速赎回确认'
+    OR
+    businessname = '快速过户确认'
+    OR
+    businessname = '基金转换转出确认'
+    OR
+    businessname = '强行赎回'
+    OR
+    businessname = '基金清盘'
+    )
+    AND
+    h.`transactioncfmdate` >= #{transactioncfmdate}
+  </select>
+  <!--净值变化（折线图红点显示）1：买入情况-->
+  <select id="getRollInPoint"  parameterType="java.util.Map" resultType="java.util.Map">
+    SELECT
+    CONCAT('买入',ROUND(SUM(h.`confirmedamount`),2),'元') roll,
+    h.`nav`,
+    h.`transactionaccountid`,
+    DATE(h.`transactioncfmdate`) enddate,
+    h.`fundcode`,
+    h.`userid`
+    FROM
+    pingan_account_funds_history h
+    WHERE
+    h.`applystname` = '确认成功'
+    AND
+    (businessname = '申购确认'
+    OR
+    businessname = '基金转换转入确认'
+    OR
+    businessname = '认购结果'
+    OR
+    businesscode = '139'
+    )
+    AND
+    h.`confirmedamount` IS NOT NULL
+    AND
+    h.`confirmedamount` != 0
+    AND
+    h.`transactiondate` IS NOT NULL
+    AND
+    h.`transactioncfmdate` IS NOT NULL
+    AND
+    h.`transactionaccountid` = #{transactionaccountid}
+    AND
+    h.`fundcode` = #{fundcode}
+    <if test="month != null and month != ''">
+      AND
+      h.`transactioncfmdate` >= SUBDATE(NOW(),INTERVAL #{month} MONTH)
+    </if>
+    GROUP BY
+    h.`transactioncfmdate`
+    ORDER BY
+    transactioncfmdate
+  </select>
+
+  <!--净值变化（折线图红点显示）1：卖出情况-->
+  <select id="getRollOutPoint"  parameterType="java.util.Map" resultType="java.util.Map">
+    SELECT
+    CONCAT('卖出',ROUND(SUM(h.`confirmedvol`),2),'份') roll,
+    h.`nav`,
+    h.`transactionaccountid`,
+    DATE(h.`transactioncfmdate`) enddate,
+    h.`fundcode`,
+    h.`userid`
+    FROM
+    pingan_account_funds_history h
+    WHERE
+    h.`applystname` = '确认成功'
+    AND
+    (businessname = '赎回确认'
+    OR
+    businessname = '快速赎回确认'
+    OR
+    businessname = '快速过户确认'
+    OR
+    businessname = '基金转换转出确认'
+    OR
+    businessname = '强行赎回'
+    OR
+    businessname = '基金清盘'
+    )
+    AND
+    (h.codeoftargetfund IS NULL
+    OR
+    h.codeoftargetfund = '')
+    AND
+    h.`confirmedamount` IS NOT NULL
+    AND
+    h.`confirmedamount` != 0
+    AND
+    h.`transactiondate` IS NOT NULL
+    AND
+    h.`transactioncfmdate` IS NOT NULL
+    AND
+    h.`transactionaccountid` = #{transactionaccountid}
+    AND
+    h.`fundcode` = #{fundcode}
+    <if test="month != null and month != ''">
+      AND
+      h.`transactioncfmdate` >= SUBDATE(NOW(),INTERVAL #{month} MONTH)
+    </if>
+    GROUP BY
+    h.`transactioncfmdate`
+    ORDER BY
+    transactioncfmdate
+  </select>
+
+  <!--净值变化（折线图红点显示）1：转出情况-->
+  <select id="getVolOutPoint"  parameterType="java.util.Map" resultType="java.util.Map">
+    SELECT
+    CONCAT('转出',ROUND(SUM(h.`confirmedvol`),2),'份') roll,
+    h.`nav`,
+    h.`transactionaccountid`,
+    DATE(h.`transactioncfmdate`) enddate,
+    h.`fundcode`,
+    h.`userid`
+    FROM
+    pingan_account_funds_history h
+    WHERE
+    h.`applystname` = '确认成功'
+    AND
+    (businessname = '赎回确认'
+    OR
+    businessname = '快速赎回确认'
+    OR
+    businessname = '快速过户确认'
+    OR
+    businessname = '基金转换转出确认'
+    OR
+    businessname = '强行赎回'
+    OR
+    businessname = '基金清盘'
+    )
+    AND
+    h.codeoftargetfund IS NOT NULL
+    AND
+    h.codeoftargetfund != ''
+    AND
+    h.`confirmedamount` IS NOT NULL
+    AND
+    h.`confirmedamount` != 0
+    AND
+    h.`transactiondate` IS NOT NULL
+    AND
+    h.`transactioncfmdate` IS NOT NULL
+    AND
+    h.`transactionaccountid` = #{transactionaccountid}
+    AND
+    h.`fundcode` = #{fundcode}
+    <if test="month != null and month != ''">
+      AND
+      h.`transactioncfmdate` >= SUBDATE(NOW(),INTERVAL #{month} MONTH)
+    </if>
+    GROUP BY
+    h.`transactioncfmdate`
+    ORDER BY
+    transactioncfmdate
+  </select>
+
+  <!--净值变化（折线图红点显示）合并-->
+  <select id="getAllRollPoint" parameterType="java.util.Map" resultType="java.util.Map" >
+    SELECT
+    a.roll AS roll_in,b.roll AS  roll_out,c.roll as vol_out,a.enddate
+    FROM
+    (
+    <include refid="roll_in" />
+    ) a
+    LEFT JOIN
+    (
+    <include refid="roll_out" />
+    ) b ON a.enddate = b.enddate
+    LEFT JOIN
+    (
+    <include refid="vol_out" />
+    ) c ON a.enddate = c.enddate
+    UNION ALL
+    SELECT
+    a.roll AS roll_in,b.roll AS  roll_out,c.roll as vol_out,a.enddate
+    FROM
+    (
+    <include refid="roll_out" />
+    ) a
+    LEFT JOIN
+    (
+    <include refid="roll_in" />
+    ) b ON a.enddate = b.enddate
+    LEFT JOIN
+    (
+    <include refid="vol_out" />
+    ) c ON a.enddate = c.enddate
+    UNION ALL
+    SELECT
+    a.roll AS roll_in,b.roll AS  roll_out,c.roll as vol_out,a.enddate
+    FROM
+    (
+    <include refid="vol_out" />
+    ) a
+    LEFT JOIN
+    (
+    <include refid="roll_in" />
+    ) b ON a.enddate = b.enddate
+    LEFT JOIN
+    (
+    <include refid="roll_out" />
+    ) c ON a.enddate = c.enddate
+  </select>
+
+  <!--我的单个基金的累计投资-->
+  <select id="getFundAccInvestSum" resultType="java.lang.String">
+    SELECT
+    IFNULL(ROUND(SUM(h.`confirmedamount`),2),0) accInvest
+    FROM
+    pingan_account_funds_history h
+    WHERE
+    h.`applystname` = '确认成功'
+    AND
+    (businessname = '申购确认'
+    OR
+    businessname = '基金转换转入确认'
+    OR
+    businessname = '认购结果'
+    OR
+    businesscode = '139'
+    )
+    AND
+    h.`confirmedamount` IS NOT NULL
+    AND
+    h.`confirmedamount` != 0
+    AND
+    h.`transactiondate` IS NOT NULL
+    AND
+    h.`transactioncfmdate` IS NOT NULL
+    AND
+    h.`transactionaccountid` = #{transactionaccountid}
+    AND
+    h.`fundcode` = #{fundcode}
+  </select>
+
+  <!--我的单个基金的累计收益-->
+  <select id="getFundAccYestDprofit" resultType="java.lang.String">
+    SELECT
+    IFNULL(ROUND(SUM(bal.`yestDprofit`),2),0) accYestDprofit
+    FROM
+    yilucaifu.pingan_third_bal_fund bal
+    WHERE
+    bal.`TRANSACTIONACCOUNTID` = #{transactionaccountid}
+    <if test = "fundcode != null and fundcode != ''">
+      AND
+      bal.`FUNDCODE` = #{fundcode}
+    </if>
+  </select>
+
+  <!--获取基金的交易记录-->
+  <select id="getFundHistoryList" resultType="java.util.Map">
+    	SELECT * FROM
+		(SELECT
+        h.fundcode,
+        CASE WHEN h.fundname IS NULL
+        THEN '-'
+        WHEN h.fundname = ''
+        THEN '-'
+        ELSE
+        h.fundname
+        END fundname,
+		CASE WHEN
+		(h.applystname = '确认成功' OR h.applystname = '已发送扣款指令' OR h.applystname = '待处理' OR h.applystname = '未确认')
+		THEN
+		'购买成功'
+		WHEN
+		h.businessname = '撤单申请'
+		THEN
+		'撤单'
+		ELSE
+		'购买失败'
+		END AS applystname,
+		'购买' AS act,
+		CASE
+		WHEN
+		h.fundcode = '003075'
+		THEN
+		DATE(h.transactiondate)
+		ELSE
+		IFNULL(DATE(h.transactioncfmdate),IFNULL(DATE(h.transactiondate),DATE(h.createtime))) END AS transactiondate,
+        CASE WHEN h.confirmedvol IS NULL
+        THEN '-'
+        WHEN h.confirmedvol = ''
+        THEN '-'
+        ELSE
+        h.confirmedvol
+        END confirmedvol,
+		IFNULL(h.nav,'-') AS nav,
+		CASE WHEN
+		(h.charge IS NULL
+		OR
+		h.charge = '')
+		THEN
+		'0'
+		ELSE
+		IFNULL(h.charge,0)
+		END AS charge,
+		IFNULL(h.confirmedamount,h.applicationamount + 0) confirmedamount,
+        CASE WHEN h.applicationamount IS NULL
+        THEN '-'
+        WHEN h.applicationamount = ''
+        THEN '-'
+        ELSE
+        h.applicationamount
+        END applicationamount,
+        IFNULL(h.applicationvol,0) * ifnull(h.nav,1) applicationvol,
+		h.createtime
+		FROM
+		pingan_account_funds_history h
+		WHERE
+		h.userid = #{userid}
+		AND
+		(h.confirmedamount IS NOT NULL OR h.applicationamount IS NOT NULL)
+		AND
+		(h.businessname = '申购申请'
+		OR
+		h.businessname = '认购申请'
+		OR
+		h.businessname = '定时定额投资申请'
+		OR
+		h.businessname = '定时定额投资确认'
+		OR
+		h.businessname = '申购确认'
+		OR
+		h.businessname = '基金转换转入确认'
+		OR
+		h.businessname = '认购结果'
+		OR
+		h.businessname = '撤单申请'
+		OR
+		h.businesscode = '139')
+		UNION ALL
+		SELECT
+        h.fundcode,
+        CASE WHEN h.fundname IS NULL
+        THEN '-'
+        WHEN h.fundname = ''
+        THEN '-'
+        ELSE
+        h.fundname
+        END fundname,
+		CASE WHEN
+		(h.applystname = '确认成功' OR h.applystname = '待处理' OR h.applystname = '未确认')
+		THEN
+		'提现成功'
+		WHEN
+		h.codeoftargetfund != '' AND h.codeoftargetfund IS NOT NULL
+		THEN
+		CONCAT('转至（',h.codeoftargetfund,'）')
+		WHEN
+		h.businessname = '撤单申请'
+		THEN
+		'撤单'
+		ELSE
+		'提现失败'
+		END AS applystname,
+		'提现' AS act,
+		CASE
+		WHEN
+		(h.businessname = '快速赎回确认' OR h.businessname = '快速赎回申请' OR h.businessname = '快速过户确认')
+		THEN
+		DATE(h.transactiondate)
+		ELSE
+		IFNULL(DATE(h.transactioncfmdate),IFNULL(DATE(h.transactiondate),DATE(h.createtime))) END AS transactiondate,
+		IFNULL(h.confirmedvol,IFNULL(h.applicationvol,0)) confirmedvol,
+		IFNULL(h.nav,'-') AS nav,
+		CASE WHEN
+		(h.charge IS NULL
+		OR
+		h.charge = '')
+		THEN
+		'0'
+		ELSE
+		IFNULL(h.charge,0)
+		END AS charge,
+		CASE WHEN
+		h.businessname = '撤单申请'
+		THEN
+		IFNULL(h.applicationamount,h.applicationvol)
+		ELSE
+		IFNULL(h.confirmedamount,h.applicationamount)
+		END AS confirmedamount,
+        CASE WHEN h.applicationamount IS NULL
+        THEN '-'
+        WHEN h.applicationamount = ''
+        THEN '-'
+        ELSE
+        h.applicationamount
+        END applicationamount,
+        ifnull(h.applicationvol,0) * ifnull(h.nav,1) applicationvol,
+		h.createtime
+		FROM
+		pingan_account_funds_history h
+		WHERE
+		h.userid = #{userid}
+		AND
+		(h.businessname = '赎回申请'
+		OR
+		h.businessname = '赎回确认'
+		OR
+		h.businessname = '快速赎回确认'
+		OR
+		h.businessname = '快速赎回申请'
+		OR
+		h.businessname = '快速过户确认'
+		OR
+		h.businessname = '基金转换转出确认'
+		OR
+		h.businessname = '强行赎回'
+		OR
+		h.businessname = '基金清盘'
+		OR
+		h.businessname = '撤单申请'
+		)) his
+		ORDER BY createtime DESC
+		<if test="pageSize != 0">
+        LIMIT #{start},#{pageSize};
+        </if>
+  </select>
+
+  <select id="getOrgFundHistoryList" resultType="java.util.Map">
+    SELECT
+    *
+    FROM
+    pingan_account_funds_history h
+    WHERE
+    h.userid = #{userid}
+    AND h.`businesscode` IN
+    <foreach collection="array" index="index" item="item" open="(" separator="," close=")">
+      #{item}
+    </foreach>
+    ORDER BY
+    h.createtime DESC
+    <if test="pageSize != 0">
+      LIMIT #{start},#{pageSize};
+    </if>
+  </select>
+
+</mapper>
