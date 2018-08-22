@@ -1,0 +1,27 @@
+server:
+  port: 8769
+spring:
+  application:
+    name: service-zuul
+
+eurekaServer:
+  host: localhost
+  port: 8761
+  user: root
+  password: root
+
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://${eurekaServer.user}:${eurekaServer.password}@${eurekaServer.host}:${eurekaServer.port}/eureka
+
+zuul:
+  routes:
+    api-org:
+      path: /api-org/**
+      serviceId: org-portal-web
+
+    #api-b:
+      #path: /api-b/**
+      #serviceId: service-feign

@@ -14,16 +14,15 @@ import cn.ylcf.server.FirstTestServer;
 @RefreshScope
 public class FirstTestServerImpl implements FirstTestServer {
     @Value("${phone.gatherinfo}")
-    String phone;
+    private String phone;
     @Value("${http.server.url}")
-    String server;
+    private String server;
 
     private static Logger logger = Logger.getLogger(FirstTestServerImpl.class);
 
     /*@GetMapping(value = "/doTest")*/
-    public String doTestServer() {
+    public String doTestServer(@PathVariable("code") Integer code) {
         logger.info("==================="+phone);
-        String bb = "dass";
-        return phone + "," + server + "," + 66 + 1;
+        return phone + "," + server + "," + code + 3;
     }
 }

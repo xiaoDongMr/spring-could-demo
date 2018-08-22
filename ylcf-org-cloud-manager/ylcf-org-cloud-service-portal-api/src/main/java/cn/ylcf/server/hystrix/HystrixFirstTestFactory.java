@@ -22,7 +22,7 @@ public class HystrixFirstTestFactory implements FirstTestServer {
     }*/
 
     @Override
-    public String doTestServer() {
+    public String doTestServer(Integer code) {
         return "服务器开小差，请稍后再试";
     }
 }
