@@ -6,9 +6,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import server.hystrix.HystrixToFirstTestFactory;
 
-@FeignClient(value = "org-portal-service", fallback = HystrixToFirstTestFactory.class)
+@FeignClient(value = "org-admin-service", fallback = HystrixToFirstTestFactory.class)
 public interface ToFirstTestServer {
 
-    @RequestMapping(value = "/hi",method = RequestMethod.POST)
+    @RequestMapping(value = "/sencondToFirst",method = RequestMethod.POST)
     String sencondToFirst(@RequestParam(value = "name") String name);
+
+    @RequestMapping(value = "/sencondServer",method = RequestMethod.POST)
+    String sencondServer();
+
+
+
 }

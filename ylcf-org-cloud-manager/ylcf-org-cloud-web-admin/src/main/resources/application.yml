@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: org-admin-web
+
+server:
+  port: 8002
+
+
+eurekaServer:
+  host: localhost
+  port: 8761
+  user: root
+  password: root
+
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://${eurekaServer.user}:${eurekaServer.password}@${eurekaServer.host}:${eurekaServer.port}/eureka
+
+feign:
+  hystrix:
+    enabled: true

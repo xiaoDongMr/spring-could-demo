@@ -4,13 +4,15 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.RestController;
-import server.SencondTestServer;
+import org.springframework.web.client.RestTemplate;
+import server.ToFirstTestServer;
 
 
 @RestController
 @RefreshScope
-public class SencondTestServerImpl implements SencondTestServer {
+public class SencondTestServerImpl implements ToFirstTestServer {
     @Value("${phone.gatherinfo}")
     private String phone;
     @Value("${http.server.url}")
@@ -18,12 +20,22 @@ public class SencondTestServerImpl implements SencondTestServer {
 
     private static Logger logger = Logger.getLogger(SencondTestServerImpl.class);
 
-    @Autowired
-    private FirstTestServer firstTestServer;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Bean
+    public RestTemplate getRestTemplate() {
+        return new RestTemplate();
+    }
 
     @Override
-    public String doTestServer2(Integer code) {
-        return "手机号："+phone + ", 服务地址：" + server + ", 随机号：" + code;
+    public String sencondToFirst(String name) {
+        return restTemplate.getForObject("http://org-portal-web/test/sencondToFirst/"+name, String.class);
+    }
+
+    @Override
+    public String sencondServer() {
+        return null;
     }
 }

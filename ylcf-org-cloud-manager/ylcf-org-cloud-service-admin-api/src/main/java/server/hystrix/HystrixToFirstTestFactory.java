@@ -13,4 +13,13 @@ public class HystrixToFirstTestFactory implements ToFirstTestServer {
     private static final String MESSAGE = "服务器开小差，请稍后再试";
 
 
+    @Override
+    public String sencondToFirst(String name) {
+        return MESSAGE;
+    }
+
+    @Override
+    public String sencondServer() {
+        return MESSAGE;
+    }
 }
