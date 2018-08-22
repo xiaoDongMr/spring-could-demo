@@ -13,18 +13,17 @@ import cn.ylcf.server.FirstTestServer;
 @RestController
 @RefreshScope
 public class FirstTestServerImpl implements FirstTestServer {
-    /*@Value("${phone.gatherinfo}")
-    private String phone;
+    @Value("${phone.gatherinfo}")
+    String phone;
     @Value("${http.server.url}")
-    private String server;*/
+    String server;
 
     private static Logger logger = Logger.getLogger(FirstTestServerImpl.class);
 
     /*@GetMapping(value = "/doTest")*/
     public String doTestServer() {
-       /* logger.info("==================="+phone);
-        String bb = "dass";*/
-        /*return phone + "," + server + "," + 66 + 1;*/
-        return "ads";
+        logger.info("==================="+phone);
+        String bb = "dass";
+        return phone + "," + server + "," + 66 + 1;
     }
 }

@@ -5,9 +5,9 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-@FeignClient(value = "firstTestServer", fallback = HystrixFirstTestFactory.class)
+@FeignClient(value = "org-portal-service", fallback = HystrixFirstTestFactory.class)
 public interface FirstTestServer {
 
-    @RequestMapping(value = "/doTestServer", method = RequestMethod.GET)
+    @RequestMapping(value = "/doTestServer", method = RequestMethod.POST)
     String doTestServer();
 }

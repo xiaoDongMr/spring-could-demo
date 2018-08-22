@@ -6,7 +6,15 @@ server.port: 8080
 
 spring:
   application:
-    name: org-portal
+    name: org-portal-service
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+      label: master
+      profile: dev
+
 
 
 eurekaServer:
