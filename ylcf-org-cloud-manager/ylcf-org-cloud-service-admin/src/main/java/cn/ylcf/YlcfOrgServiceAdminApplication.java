@@ -1,4 +1,4 @@
-package ylcf;
+package cn.ylcf;
 
 
 import org.springframework.boot.SpringApplication;

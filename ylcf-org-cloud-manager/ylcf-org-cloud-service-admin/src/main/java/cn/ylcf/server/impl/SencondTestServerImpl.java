@@ -1,11 +1,10 @@
-package ylcf.server.impl;
+package cn.ylcf.server.impl;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.RestController;
-import server.SencondTestServer;
+import cn.ylcf.service.SencondTestServer;
 
 
 @RestController
@@ -17,10 +16,6 @@ public class SencondTestServerImpl implements SencondTestServer {
     private String server;
 
     private static Logger logger = Logger.getLogger(SencondTestServerImpl.class);
-
-    @Autowired
-    private FirstTestServer firstTestServer;
-
 
     @Override
     public String doTestServer2(Integer code) {

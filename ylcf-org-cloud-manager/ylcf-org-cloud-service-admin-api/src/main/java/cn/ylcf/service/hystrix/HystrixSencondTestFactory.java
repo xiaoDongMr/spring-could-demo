@@ -1,9 +1,9 @@
-package server.hystrix;
+package cn.ylcf.service.hystrix;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import server.SencondTestServer;
+import cn.ylcf.service.SencondTestServer;
 
 @Component
 public class HystrixSencondTestFactory implements SencondTestServer {
