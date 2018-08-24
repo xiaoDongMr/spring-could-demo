@@ -1,6 +1,8 @@
 package cn.ylcf.server.impl;
 
+import cn.ylcf.server.ThirdTestService;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +25,7 @@ public class FirstTestServerImpl implements FirstTestServer {
     /*@GetMapping(value = "/doTest")*/
     public String doTestServer(@PathVariable("code") Integer code) {
         logger.info("==================="+phone);
+        //thirdTestService.doTestServer3(444);
         return phone + "," + server + "," + code + 3;
     }
 }
