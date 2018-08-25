@@ -8,8 +8,8 @@ spring:
         git:
           uri: https://github.com/xiaoDongMr/spring-could-demo
           searchPaths: config/app
-          username: xxxxx
-          password: xxxxx
+          username: xxxx
+          password: xxx
       label: master
 
 
