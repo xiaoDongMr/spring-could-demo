@@ -1,10 +1,8 @@
+server:
+  port: 8764
 spring:
   application:
-    name: org-admin-web
-
-server:
-  port: 8002
-
+    name: service-turbine
 
 eurekaServer:
   host: localhost
@@ -18,11 +16,6 @@ eureka:
     service-url:
       defaultZone: http://${eurekaServer.user}:${eurekaServer.password}@${eurekaServer.host}:${eurekaServer.port}/eureka
 
-feign:
-  hystrix:
-    enabled: true
-
-
 management:
   endpoints:
     web:
@@ -31,3 +24,12 @@ management:
       cors:
         allowed-origins: "*"
         allowed-methods: "*"
+
+turbine:
+  app-config: org-portal-web
+  aggregator:
+    clusterConfig: default
+  clusterNameExpression: new String("default")
+  combine-host: true
+  instanceUrlSuffix:
+    default: actuator/hystrix.stream

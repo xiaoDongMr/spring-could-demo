@@ -19,13 +19,22 @@ spring:
 
 
 
+
 eurekaServer:
   host: localhost
   port: 8761
   user: root
   password: root
 
+# swagger2
+#swagger2.package: cn.ylcf.server
+
+# 默认为 true
+#spring.swagger.enabled=true
+
 eureka:
+#  instance:
+#    status-page-url: http://localhost:${server.port}/swagger-ui.html # ${server.port}为该服务的端口号
   client:
     #将此项目注册到Eureka服务
     register-with-eureka: true
