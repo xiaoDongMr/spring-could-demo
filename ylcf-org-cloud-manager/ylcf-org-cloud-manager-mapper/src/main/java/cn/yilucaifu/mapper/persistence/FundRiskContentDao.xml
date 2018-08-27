@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yilucaifu.persistence.FundRiskContentDao">
+<mapper namespace="cn.yilucaifu.mapper.persistence.FundRiskContentDao">
   <resultMap id="BaseResultMap" type="cn.yilucaifu.domain.FundRiskContent">
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="test_class" jdbcType="INTEGER" property="testClass" />

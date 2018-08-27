@@ -16,7 +16,7 @@
         <springBootMyBatis.version>1.3.0</springBootMyBatis.version>
         <springBootpagehelper.version>1.2.3</springBootpagehelper.version>
         <springBootAdmin.version>2.0.2</springBootAdmin.version>
-        <springBootDruid.version>1.1.3</springBootDruid.version>
+        <springBootDruid.version>1.1.10</springBootDruid.version>
         <springBootRedis.version>1.4.3.RELEASE</springBootRedis.version>
         <junit.version>4.12</junit.version>
         <mysql.version>5.1.32</mysql.version>

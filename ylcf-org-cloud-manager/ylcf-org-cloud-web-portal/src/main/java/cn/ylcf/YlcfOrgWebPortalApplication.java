@@ -9,15 +9,14 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.annotation.Configuration;
 
 @SpringBootApplication
 @EnableEurekaClient
+@EnableDiscoveryClient
 @EnableFeignClients
 @EnableHystrix
 @EnableHystrixDashboard
 @EnableCircuitBreaker
-@Configuration
 public class YlcfOrgWebPortalApplication {
 
     public static void main(String[] args) {

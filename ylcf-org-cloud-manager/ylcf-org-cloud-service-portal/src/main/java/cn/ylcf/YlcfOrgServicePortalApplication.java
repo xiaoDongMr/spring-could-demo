@@ -1,6 +1,7 @@
 package cn.ylcf;
 
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -14,7 +15,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableDiscoveryClient
 @Configuration
 @EnableTransactionManagement
-@ServletComponentScan
+@MapperScan(basePackages = "cn.yilucaifu.mapper")
 public class YlcfOrgServicePortalApplication {
     public static void main(String[] args) {
         SpringApplication.run(YlcfOrgServicePortalApplication.class, args);

@@ -17,8 +17,6 @@ eurekaServer:
   user: root
   password: root
 
-# swagger2
-swagger2.package: cn.ylcf.controller
 
 eureka:
   client:

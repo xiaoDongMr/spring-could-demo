@@ -1,21 +1,57 @@
 spring:
-    datasource:
-        type: com.alibaba.druid.pool.DruidDataSource
-        driverClassName: com.mysql.jdbc.Driver
-        driver-class-name: com.mysql.jdbc.Driver
-        platform: mysql
-        url: jdbc:mysql://192.168.1.217:3306/yilucaifu_org?useUnicode=true&characterEncoding=utf-8&useSSL=false
-        username: root
-        password: 7ujm8ik,
-        initialSize: 5
-        minIdle: 5
-        maxActive: 20
-        maxWait: 60000
-        timeBetweenEvictionRunsMillis: 60000
-        minEvictableIdleTimeMillis: 300000
-        validationQuery: SELECT1FROMDUAL
-        testWhileIdle: true
-        testOnBorrow: false
-        testOnReturn: false
-        filters: stat,wall,log4j
-        logSlowSql: true
+  datasource:
+    druid:
+      url: jdbc:mysql://localhost:3306/yilucaifu_org?useUnicode=true&characterEncoding=UTF-8
+      username: root
+      password:
+      #password: 7ujm8ik,
+      driverClassName: com.mysql.jdbc.Driver
+      driver-class-name: com.mysql.jdbc.Driver
+      platform: mysql
+      initialSize: 5
+      minIdle: 5
+      maxActive: 20
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: SELECT1FROMDUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      filters: stat,wall,log4j
+      logSlowSql: true
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        exclusions: '*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*'
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        reset-enable: false
+        login-username: admin
+        login-password: admin
+        allow: 127.0.0.1
+        deny: 192.168.32.139 #访问黑名单
+      filter:
+        stat:
+          db-type: mysql
+          log-slow-sql: true
+          slow-sql-millis: 5000
+        wall:
+          enabled: true
+          db-type: mysql
+          config:
+            delete-allow: false
+            drop-table-allow: false
+    type: com.alibaba.druid.pool.DruidDataSource
+
+mybatis:
+    type-aliases-package: cn.yilucaifu.domain
+    mapper-locations: classpath:mapper/*.xml
+
+
+pagehelper:
+    helperDialect: mysql
+    reasonable: true
+    supportMethodsArguments: true
+    params: count=countSql
