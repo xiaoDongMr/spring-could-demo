@@ -27,7 +27,7 @@ eurekaServer:
   password: root
 
 # swagger2
-#swagger2.package: cn.ylcf.server
+swagger2.package: cn.ylcf.server
 
 # 默认为 true
 #spring.swagger.enabled=true

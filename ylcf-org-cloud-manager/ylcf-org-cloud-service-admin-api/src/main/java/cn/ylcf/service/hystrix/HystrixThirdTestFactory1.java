@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class HystrixThirdTestFactory implements ThirdTestService {
+public class HystrixThirdTestFactory1 implements ThirdTestService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HystrixThirdTestFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HystrixThirdTestFactory1.class);
 
     private static final String MESSAGE = "服务器开小差，请稍后再试";
 

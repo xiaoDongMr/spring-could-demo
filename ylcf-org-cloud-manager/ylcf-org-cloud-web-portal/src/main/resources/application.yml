@@ -6,44 +6,6 @@ spring:
   sleuth:
     sampler:
       probability: 1.0
-  swagger:
-    enabled: true
-    title: 企业理财前台
-    description: 前台接口
-    version: v1.0
-    base-path: http://localhost:${server.port}/swagger-ui.html
-    #维护者信息
-    contact:
-      name: 小东
-      url: http://localhost:${server.port}/swagger-ui.html
-      email: 1027331569@qq.com
-    #swagger扫描的基础包，默认：全扫描(分组情况下此处可不配置)
-    #base-package:
-    #全局参数,比如Token之类的验证信息可以全局话配置
-    #global-operation-parameters:
-    #    description: 'Token信息,必填项'
-    #    modelRef: 'string'
-    #    name: 'Authorization'
-    #    parameter-type: 'header'
-    #    required: true
-    base-package: cn.ylcf.controller
-    #groups:
-    #  [通用]:
-    #    base-package: com.ylcf.controller
-      #system-group:
-      #  base-package: com.ylcf.controller.system
-    security:
-      filter-plugin: true
-      username: swagger
-      password: swagger
-      # 关闭 JSR
-    validator-plugin: false
-    api-key:
-      key-name: myToken
-
-
-
-
 
 server:
   port: 8001
@@ -54,6 +16,9 @@ eurekaServer:
   port: 8761
   user: root
   password: root
+
+# swagger2
+swagger2.package: cn.ylcf.controller
 
 eureka:
   client:

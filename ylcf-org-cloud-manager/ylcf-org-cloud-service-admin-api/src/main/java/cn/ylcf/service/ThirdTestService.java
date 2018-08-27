@@ -1,12 +1,12 @@
 package cn.ylcf.service;
 
-import cn.ylcf.service.hystrix.HystrixThirdTestFactory;
+import cn.ylcf.service.hystrix.HystrixThirdTestFactory1;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(value = "org-admin-service", fallback = HystrixThirdTestFactory.class)
+@FeignClient(value = "org-admin-service", fallback = HystrixThirdTestFactory1.class)
 public interface ThirdTestService {
 
     @RequestMapping(value = "/doTestServer3", method = RequestMethod.POST)
