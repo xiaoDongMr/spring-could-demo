@@ -2,9 +2,12 @@ package cn.ylcf.server.impl;
 
 import cn.yilucaifu.domain.Users;
 import cn.yilucaifu.domain.UsersExample;
+import cn.yilucaifu.domain.fundinfo.FundDetail;
 import cn.yilucaifu.mapper.persistence.UsersDao;
+import cn.yilucaifu.mapper.persistence_jl.FundDao;
 import io.swagger.annotations.*;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -19,14 +22,18 @@ import java.util.List;
 @RestController
 @RefreshScope
 public class FirstTestServerImpl implements FirstTestServer {
+
+    private final static Logger logger = LoggerFactory.getLogger(FirstTestServerImpl.class);
+
     @Value("${phone.gatherinfo}")
     private String phone;
     @Value("${http.server.url}")
     private String server;
     @Autowired
     private UsersDao usersDao;
+    @Autowired
+    private FundDao fundDao;
 
-    private static Logger logger = Logger.getLogger(FirstTestServerImpl.class);
 
     @ApiOperation("获取手机号码")
     @ApiImplicitParams(
@@ -44,6 +51,10 @@ public class FirstTestServerImpl implements FirstTestServer {
         List<Users> usersList = usersDao.selectByExample(usersExample);
         Users user = usersList.get(0);
 
-        return user.getCompanyName()+phone + "," + server + "," + code + 3;
+        List<FundDetail> list = fundDao.getChonseFundList(2);
+        FundDetail fundDetail = list.get(0);
+        String fundcode = fundDetail.getFund_code();
+
+        return user.getCompanyName()+phone + "," + server + "," + fundcode;
     }
 }

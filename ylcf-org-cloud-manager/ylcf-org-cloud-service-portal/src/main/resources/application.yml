@@ -1,10 +1,15 @@
 spring:
   datasource:
     druid:
-      url: jdbc:mysql://localhost:3306/yilucaifu_org?useUnicode=true&characterEncoding=UTF-8
-      username: root
-      password:
-      #password: 7ujm8ik,
+      org:
+        url: jdbc:mysql://192.168.1.217:3306/yilucaifu_org?useUnicode=true&characterEncoding=UTF-8
+        username: root
+      #password:
+        password: 7ujm8ik,
+      juling:
+        url: jdbc:mysql://192.168.1.217:3306/juling?useUnicode=true&characterEncoding=UTF-8
+        username: root
+        password: 7ujm8ik,
       driverClassName: com.mysql.jdbc.Driver
       driver-class-name: com.mysql.jdbc.Driver
       platform: mysql
@@ -30,7 +35,7 @@ spring:
         reset-enable: false
         login-username: admin
         login-password: admin
-        allow: 127.0.0.1
+        allow: 127.0.0.1,192.168.1.217
         deny: 192.168.32.139 #访问黑名单
       filter:
         stat:
@@ -45,9 +50,6 @@ spring:
             drop-table-allow: false
     type: com.alibaba.druid.pool.DruidDataSource
 
-mybatis:
-    type-aliases-package: cn.yilucaifu.domain
-    mapper-locations: classpath:mapper/*.xml
 
 
 pagehelper:
@@ -55,3 +57,40 @@ pagehelper:
     reasonable: true
     supportMethodsArguments: true
     params: count=countSql
+
+
+#配置日志
+logging:
+  config: classpath:logback-spring.xml
+#  path: /logs/org
+#  file:
+#    max-history: 30
+#    max-size: 50MB
+  #不同目录下的日志可配置不同级别
+#  level:
+  #mybatis alibaba log configure
+#    org.springframework.security: debug
+#    java.sql.ResultSet: info
+#    java.sql.Connection: debug
+#    java.sql.Statement: debug
+#    java.sql.PreparedStatement: debug
+#    org.mybatis.spring: debug
+#    cn.yilucaifu.mapper: debug
+
+#请求和响应GZIP压缩支持
+feign:
+  httpclient:
+    enabled: false
+  okhttp:
+    enabled: true
+  hystrix:
+    enabled: true
+
+#设置超时时间3秒
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 3000

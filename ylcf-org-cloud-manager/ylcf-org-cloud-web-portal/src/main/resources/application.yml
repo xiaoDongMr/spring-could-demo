@@ -36,3 +36,11 @@ management:
       cors:
         allowed-origins: "*"
         allowed-methods: "*"
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 5000
