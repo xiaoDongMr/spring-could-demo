@@ -50,6 +50,20 @@ spring:
             drop-table-allow: false
     type: com.alibaba.druid.pool.DruidDataSource
 
+  redis:
+    host: 192.168.1.168
+    port: 6379
+    #password: root
+security:
+  basic:
+    enabled: false
+  oauth2:
+    client:
+      access-token-uri: http://10.10.8.2:9030/uaa/oauth/token ##网关的地址
+      user-authorization-uri: http://10.10.8.2:9030/uaa/oauth/authorize
+    resource:
+      user-info-uri:  http://10.10.8.2:9030/uaa/user
+      prefer-token-info: false
 
 
 pagehelper:

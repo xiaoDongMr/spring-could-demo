@@ -37,10 +37,6 @@ eureka:
     service-url:
       defaultZone: http://${eurekaServer.user}:${eurekaServer.password}@${eurekaServer.host}:${eurekaServer.port}/eureka
 
-
-
-#断路器跳闸时间
-
 management:
   endpoints:
     web:
