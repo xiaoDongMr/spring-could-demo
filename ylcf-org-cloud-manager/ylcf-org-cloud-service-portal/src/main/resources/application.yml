@@ -50,6 +50,15 @@ spring:
             drop-table-allow: false
     type: com.alibaba.druid.pool.DruidDataSource
 
+  redis:
+      host: 127.0.0.1
+      port: 6379
+
+  security:
+    oauth2:
+      jwt:
+        signingKey: 123456
+
 
 
 pagehelper:

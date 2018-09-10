@@ -20,8 +20,20 @@ zuul:
   routes:
     api-org:
       path: /api-org/**
-      serviceId: org-portal-web
+      serviceId: org-portal-service
 
     #api-b:
       #path: /api-b/**
       #serviceId: service-feign
+security:
+  basic:
+    enabled: false
+  oauth2:
+    client:
+      access-token-uri: http://localhost:8769/api-org/oauth/token
+      user-authorization-uri: http://localhost:8769/api-org/oauth/authorize
+      client-id: webApp
+      client-secret: webApp
+    resource:
+      user-info-uri:  http://localhost:8769/api-org/user
+      prefer-token-info: false
