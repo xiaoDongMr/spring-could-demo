@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableDiscoveryClient
 @Configuration
 @EnableTransactionManagement
-@EnableAuthorizationServer
 @EnableGlobalMethodSecurity(prePostEnabled = true)//开启注解
 /*@MapperScan(basePackages = "cn.yilucaifu.mapper")*/
 public class YlcfOrgServicePortalApplication {
