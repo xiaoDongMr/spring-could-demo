@@ -1,8 +1,6 @@
 package cn.ylcf.server.interceptor;
 
-import cn.yilucaifu.utils.JwtUtils;
-import cn.yilucaifu.utils.RequestParameterWrapper;
-import cn.yilucaifu.utils.StringUtil;
+import cn.yilucaifu.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +40,8 @@ public class InterceptorConfig implements HandlerInterceptor {
                 //redis中查看是否过期
 
                 //没过期刷新token失效时间
+
+                //request请求添加userId及username
                 Map<String, Object> extraParams = new HashMap<String, Object>();
                 extraParams.put("userId", jwtUser.getUserId());
                 extraParams.put("username", jwtUser.getUsername());
@@ -51,6 +51,9 @@ public class InterceptorConfig implements HandlerInterceptor {
             } catch (Exception e) {
                 e.printStackTrace();
                 logger.info("拦截器解析令牌失败");
+                YlcfResult result = YlcfResult.build(40003, "token 解析失败请重新登录");
+                PrintWriter printWriter = res.getWriter();
+                printWriter.write(JsonUtils.objectToJson(result));
                 return false;
             }
         }

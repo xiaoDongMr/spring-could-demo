@@ -10,7 +10,7 @@ spring:
         url: jdbc:mysql://192.168.1.217:3306/juling?useUnicode=true&characterEncoding=UTF-8
         username: root
         password: 7ujm8ik,
-      driverClassName: com.mysql.jdbc.Driver
+      #driverClassName: com.mysql.jdbc.Driver
       driver-class-name: com.mysql.jdbc.Driver
       platform: mysql
       initialSize: 5
