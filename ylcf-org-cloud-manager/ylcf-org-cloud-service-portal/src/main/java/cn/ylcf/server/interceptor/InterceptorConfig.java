@@ -10,13 +10,16 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class InterceptorConfig implements HandlerInterceptor {
     private final static Logger logger = LoggerFactory.getLogger(InterceptorConfig.class);
     @Value("${jwt.secret}")
-    private String jwtSecret;
+    private String JWT_SECRET;
+    @Value("${jwt.expires}")
+    private String JWT_EXPIRES;
 
     /**
      * 进入controller层之前拦截请求
@@ -36,28 +39,56 @@ public class InterceptorConfig implements HandlerInterceptor {
         if (token == null || !token.startsWith("Bearer ")) {
             token = token.replace("Bearer ", "");
             try {
-                JwtUtils.JwtUser jwtUser = JwtUtils.verifyToken(token, jwtSecret);
-                //redis中查看是否过期
+                JwtUtils.JwtUser jwtUser = JwtUtils.verifyToken(token, JWT_SECRET);
+                //jwt是否失效
+                if (new Date().after(jwtUser.getExpires())) {
+                    logger.info("请求拦截检查jwt已过期");
+                    YlcfResult result = YlcfResult.build(-2, "token 验证令牌已过期请重新登录");
+                    PrintWriter printWriter = res.getWriter();
+                    printWriter.write(JsonUtils.objectToJson(result));
+                    return false;
+                }
 
-                //没过期刷新token失效时间
+                //更新失效时间
+                try {
+                    token = JwtUtils.createToken(jwtUser, Long.parseLong(JWT_EXPIRES), JWT_SECRET);
+                    //设置token至请求头
+                    res.addHeader("Authorization", "Bearer " + token);
+                } catch (Exception e) {
+                    logger.info("请求拦截更新失效时间jwt加密失败");
+                    YlcfResult result = YlcfResult.build(-2, "请求拦截更新失效时间失败");
+                    e.printStackTrace();
+                    PrintWriter printWriter = res.getWriter();
+                    printWriter.write(JsonUtils.objectToJson(result));
+                    return false;
+                }
 
                 //request请求添加userId及username
-                Map<String, Object> extraParams = new HashMap<String, Object>();
-                extraParams.put("userId", jwtUser.getUserId());
-                extraParams.put("username", jwtUser.getUsername());
-                RequestParameterWrapper requestParameterWrapper = new RequestParameterWrapper(req);
-                requestParameterWrapper.addParameters(extraParams);
+                try {
+                    Map<String, Object> extraParams = new HashMap<String, Object>();
+                    extraParams.put("userId", jwtUser.getUserId());
+                    extraParams.put("username", jwtUser.getUsername());
+                    RequestParameterWrapper requestParameterWrapper = new RequestParameterWrapper(req);
+                    requestParameterWrapper.addParameters(extraParams);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    logger.info("请求拦截追加用户信息失败");
+                    YlcfResult result = YlcfResult.build(-2, "追加用户信息失败请重新登录");
+                    PrintWriter printWriter = res.getWriter();
+                    printWriter.write(JsonUtils.objectToJson(result));
+                    return false;
+                }
 
             } catch (Exception e) {
                 e.printStackTrace();
                 logger.info("拦截器解析令牌失败");
-                YlcfResult result = YlcfResult.build(40003, "token 解析失败请重新登录");
+                YlcfResult result = YlcfResult.build(-2, "token 验证失败请重新登录");
                 PrintWriter printWriter = res.getWriter();
                 printWriter.write(JsonUtils.objectToJson(result));
                 return false;
             }
         }
-        // 拦截请求路径 request.getRequestURI()
+        // 拦截请求路径 request.getRequestURI().toString();
         return true;
     }
 

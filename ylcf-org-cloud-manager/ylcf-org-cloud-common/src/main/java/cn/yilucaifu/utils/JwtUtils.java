@@ -55,10 +55,12 @@ public class JwtUtils {
         DecodedJWT jwt = verifier.verify(token);
         // 从对象中拿出来user的键值对
         Claim userClaim = jwt.getClaim("jwtUser");
+        Date expires = jwt.getExpiresAt();
         String json = userClaim.asString();
 
         // 用jackson将String转换成对象
         JwtUser user = new ObjectMapper().readValue(json, JwtUser.class);
+        user.setExpires(expires);
 
         return user;
     }
@@ -67,15 +69,14 @@ public class JwtUtils {
     public static class JwtUser {
         private Integer userId;
         private String username;
-        private String company;
+        private Date expires;
 
         public JwtUser() {
         }
 
-        public JwtUser(Integer userId, String username, String company) {
+        public JwtUser(Integer userId, String username) {
             this.userId = userId;
             this.username = username;
-            this.company = company;
         }
 
         public Integer getUserId() {
@@ -94,12 +95,12 @@ public class JwtUtils {
             this.username = username;
         }
 
-        public String getCompany() {
-            return company;
+        public Date getExpires() {
+            return expires;
         }
 
-        public void setCompany(String company) {
-            this.company = company;
+        public void setExpires(Date expires) {
+            this.expires = expires;
         }
 
         @Override
@@ -107,17 +108,16 @@ public class JwtUtils {
             return "JwtUser{" +
                     "userId=" + userId +
                     ", username='" + username + '\'' +
-                    ", company='" + company + '\'' +
+                    ", expires=" + expires +
                     '}';
         }
-
     }
 
     public static void main(String[] args) {
         String token = null;
         //加密
         try {
-            token = createToken(new JwtUser(1, "张三", "yilucaifu"), 10000, "yilucaifu2018");
+            token = createToken(new JwtUser(1, "张三"), 10000, "yilucaifu2018");
         } catch (Exception e) {
             e.printStackTrace();
         }
