@@ -18,4 +18,4 @@ jwt:
   #jwt对称加密签名密钥
   secret: xiaodong2018@yilucaifu
   #jwt生成token时效一天
-  expires: 86400
+  expires: 86400000
