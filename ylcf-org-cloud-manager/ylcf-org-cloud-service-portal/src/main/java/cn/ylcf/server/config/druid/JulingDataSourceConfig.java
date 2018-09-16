@@ -13,9 +13,9 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
 import javax.sql.DataSource;
 
-@Configuration
+//@Configuration
 // 扫描 Mapper 接口并容器管理
-@MapperScan(basePackages = JulingDataSourceConfig.PACKAGE, sqlSessionFactoryRef = "julingSqlSessionFactory")
+//@MapperScan(basePackages = JulingDataSourceConfig.PACKAGE, sqlSessionFactoryRef = "julingSqlSessionFactory")
 public class JulingDataSourceConfig {
     // 精确到 juling 目录，以便跟其他数据源隔离
     static final String PACKAGE = "cn.yilucaifu.mapper.persistence_jl";

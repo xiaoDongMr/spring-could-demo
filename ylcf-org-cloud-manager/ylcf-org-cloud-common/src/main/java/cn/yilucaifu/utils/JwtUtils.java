@@ -55,12 +55,10 @@ public class JwtUtils {
         DecodedJWT jwt = verifier.verify(token);
         // 从对象中拿出来user的键值对
         Claim userClaim = jwt.getClaim("jwtUser");
-        Date expires = jwt.getExpiresAt();
         String json = userClaim.asString();
 
         // 用jackson将String转换成对象
         JwtUser user = new ObjectMapper().readValue(json, JwtUser.class);
-        user.setExpires(expires);
 
         return user;
     }
@@ -69,7 +67,6 @@ public class JwtUtils {
     public static class JwtUser {
         private Integer userId;
         private String username;
-        private Date expires;
 
         public JwtUser() {
         }
@@ -95,20 +92,11 @@ public class JwtUtils {
             this.username = username;
         }
 
-        public Date getExpires() {
-            return expires;
-        }
-
-        public void setExpires(Date expires) {
-            this.expires = expires;
-        }
-
         @Override
         public String toString() {
             return "JwtUser{" +
                     "userId=" + userId +
                     ", username='" + username + '\'' +
-                    ", expires=" + expires +
                     '}';
         }
     }

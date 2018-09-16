@@ -1,17 +1,32 @@
 spring:
+  application:
+      name: org-portal-service
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+      label: master
+      profile: dev
+#  zipkin:
+#    base-url: http://localhost:9411
+#  sleuth:
+#      sampler:
+#        probability: 1.0
+
   datasource:
     druid:
       org:
-        url: jdbc:mysql://192.168.1.217:3306/yilucaifu_org?useUnicode=true&characterEncoding=UTF-8
+        url: jdbc:mysql://127.0.0.1:3306/yilucaifu_org?useUnicode=true&characterEncoding=UTF-8
         username: root
       #password:
-        password: 7ujm8ik,
-      juling:
-        url: jdbc:mysql://192.168.1.217:3306/juling?useUnicode=true&characterEncoding=UTF-8
-        username: root
-        password: 7ujm8ik,
-      #driverClassName: com.mysql.jdbc.Driver
-      driver-class-name: com.mysql.jdbc.Driver
+        password:
+      #juling:
+      #  url: jdbc:mysql://192.168.1.217:3306/juling?useUnicode=true&characterEncoding=UTF-8
+      #  username: root
+      #  password: 7ujm8ik,
+      driverClassName: com.mysql.jdbc.Driver
+      #driver-class-name: com.mysql.jdbc.Driver
       platform: mysql
       initialSize: 5
       minIdle: 5
@@ -62,8 +77,6 @@ spring:
         max-idle: 20
         min-idle: 0
         max-wait: -1ms
-
-
 
 
 pagehelper:
