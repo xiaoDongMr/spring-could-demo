@@ -17,14 +17,14 @@ spring:
   datasource:
     druid:
       org:
-        url: jdbc:mysql://127.0.0.1:3306/yilucaifu_org?useUnicode=true&characterEncoding=UTF-8
+        url: jdbc:mysql://192.168.1.217:3306/yilucaifu_org?useUnicode=true&characterEncoding=UTF-8
         username: root
       #password:
-        password:
-      #juling:
-      #  url: jdbc:mysql://192.168.1.217:3306/juling?useUnicode=true&characterEncoding=UTF-8
-      #  username: root
-      #  password: 7ujm8ik,
+        password: 7ujm8ik,
+      juling:
+        url: jdbc:mysql://192.168.1.217:3306/juling?useUnicode=true&characterEncoding=UTF-8
+        username: root
+        password: 7ujm8ik,
       driverClassName: com.mysql.jdbc.Driver
       #driver-class-name: com.mysql.jdbc.Driver
       platform: mysql
@@ -67,7 +67,7 @@ spring:
 
   #redis
   redis:
-    host: 192.168.1.168
+    host: 127.0.0.1
     port: 6379
     password:
     timeout: 10000ms
@@ -77,6 +77,19 @@ spring:
         max-idle: 20
         min-idle: 0
         max-wait: -1ms
+
+  rabbitmq:
+    addresses: 127.0.0.1:5672
+    username: guest
+    password: guest
+    virtual-host: /
+  ## 消费端配置
+    listener:
+      simple:
+        concurrency: 5
+        acknowledge-mode: manual
+        max-concurrency: 10
+        prefetch: 1
 
 
 pagehelper:

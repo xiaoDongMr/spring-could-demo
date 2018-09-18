@@ -1,8 +1,9 @@
 package cn.yilucaifu.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Users {
+public class Users implements Serializable{
     private Integer userId;
 
     private String username;
